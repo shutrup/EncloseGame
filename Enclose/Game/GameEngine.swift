@@ -5,7 +5,7 @@ final class GameEngine: ObservableObject {
     @Published private(set) var state: GameState
     let board: BoardLayout
 
-    init(board: BoardLayout = .diamond16) {
+    init(board: BoardLayout = .diamond25) {
         self.board = board
         self.state = GameState(zones: board.zones)
     }

@@ -6,12 +6,12 @@ struct BoardLayout {
     let edges: [Edge]
     let zones: [Zone]
 
-    static let diamond16: BoardLayout = {
+    static let diamond25: BoardLayout = {
         let cellSize: CGFloat = 2.0
         let half: CGFloat = cellSize / 2.0
 
-        // 7 rows: 1, 2, 3, 4, 3, 2, 1 (total 16), no side single protrusions.
-        let counts = [1, 2, 3, 4, 3, 2, 1]
+        // 7 rows: 1, 3, 5, 7, 5, 3, 1 (total 25). Odd counts keep perfect grid alignment.
+        let counts = [1, 3, 5, 7, 5, 3, 1]
         let yStart = (counts.count - 1) / 2
         let step: CGFloat = 2.0
         let rows: [(y: CGFloat, xs: [CGFloat])] = counts.enumerated().map { index, count in
