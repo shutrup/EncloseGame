@@ -1,0 +1,77 @@
+import Foundation
+import CoreGraphics
+
+struct BoardLayout {
+    let nodes: [Node]
+    let edges: [Edge]
+    let zones: [Zone]
+
+    static let diamond19: BoardLayout = {
+        let cellSize: CGFloat = 1.0
+        let half: CGFloat = cellSize / 2.0
+
+        // 5 rows: 1, 4, 9, 4, 1 (total 19)
+        let rows: [(y: CGFloat, xs: [CGFloat])] = [
+            (2, [0]),
+            (1, [-1.5, -0.5, 0.5, 1.5]),
+            (0, [-4, -3, -2, -1, 0, 1, 2, 3, 4]),
+            (-1, [-1.5, -0.5, 0.5, 1.5]),
+            (-2, [0])
+        ]
+
+        struct Corner: Hashable {
+            let x: CGFloat
+            let y: CGFloat
+        }
+
+        var nodeMap: [Corner: Int] = [:]
+        var nodes: [Node] = []
+        var edges: [Edge] = []
+        var edgeMap: [Set<Int>: Int] = [:]
+        var zones: [Zone] = []
+
+        func nodeId(x: CGFloat, y: CGFloat) -> Int {
+            let key = Corner(x: x, y: y)
+            if let existing = nodeMap[key] { return existing }
+            let id = nodes.count
+            nodeMap[key] = id
+            nodes.append(Node(id: id, position: CGPoint(x: x, y: y)))
+            return id
+        }
+
+        func edgeId(a: Int, b: Int) -> Int {
+            let key: Set<Int> = [a, b]
+            if let existing = edgeMap[key] { return existing }
+            let id = edges.count
+            edgeMap[key] = id
+            edges.append(Edge(id: id, a: min(a, b), b: max(a, b)))
+            return id
+        }
+
+        var zoneId = 0
+        for row in rows {
+            for x in row.xs {
+                let topLeft = nodeId(x: x - half, y: row.y + half)
+                let topRight = nodeId(x: x + half, y: row.y + half)
+                let bottomLeft = nodeId(x: x - half, y: row.y - half)
+                let bottomRight = nodeId(x: x + half, y: row.y - half)
+
+                let e1 = edgeId(a: topLeft, b: topRight)
+                let e2 = edgeId(a: topRight, b: bottomRight)
+                let e3 = edgeId(a: bottomRight, b: bottomLeft)
+                let e4 = edgeId(a: bottomLeft, b: topLeft)
+
+                let zone = Zone(
+                    id: zoneId,
+                    nodeIds: [topLeft, topRight, bottomRight, bottomLeft],
+                    edgeIds: [e1, e2, e3, e4],
+                    owner: .none
+                )
+                zones.append(zone)
+                zoneId += 1
+            }
+        }
+
+        return BoardLayout(nodes: nodes, edges: edges, zones: zones)
+    }()
+}
