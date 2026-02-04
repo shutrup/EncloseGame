@@ -3,6 +3,8 @@ import UIKit
 
 struct BoardView: View {
     @ObservedObject var engine: GameEngine
+    let hapticsEnabled: Bool
+    let animationsEnabled: Bool
 
     @State private var hoveredEdgeId: Int?
     @State private var lastPlayedEdgeId: Int?
@@ -90,14 +92,21 @@ struct BoardView: View {
                         if let edgeId = nearestEdge(to: value.location, in: proxy.size) {
                             let didPlay = engine.play(edgeId: edgeId)
                             if didPlay {
-                                haptic.impactOccurred()
-                                withAnimation(.easeOut(duration: 0.18)) {
-                                    lastPlayedEdgeId = edgeId
+                                if hapticsEnabled {
+                                    haptic.impactOccurred()
                                 }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
-                                    if lastPlayedEdgeId == edgeId {
-                                        lastPlayedEdgeId = nil
+                                if animationsEnabled {
+                                    withAnimation(.easeOut(duration: 0.18)) {
+                                        lastPlayedEdgeId = edgeId
                                     }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                                        if lastPlayedEdgeId == edgeId {
+                                            lastPlayedEdgeId = nil
+                                        }
+                                    }
+                                } else {
+                                    lastPlayedEdgeId = edgeId
+                                    lastPlayedEdgeId = nil
                                 }
                             }
                         }

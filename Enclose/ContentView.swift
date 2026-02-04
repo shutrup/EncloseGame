@@ -2,7 +2,10 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var engine = GameEngine()
+    @AppStorage("hapticsEnabled") private var hapticsEnabled = true
+    @AppStorage("animationsEnabled") private var animationsEnabled = true
     @State private var showHowToPlay = true
+    @State private var showSettings = false
 
     var body: some View {
         ZStack {
@@ -21,11 +24,25 @@ struct ContentView: View {
                         .clipShape(Capsule())
                     Spacer()
                     ScorePill(label: "O", score: engine.state.scoreO, color: Color(red: 0.78, green: 0.18, blue: 0.18))
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.black.opacity(0.7))
+                            .padding(10)
+                            .background(Color.black.opacity(0.05))
+                            .clipShape(Circle())
+                    }
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 6)
 
-                BoardView(engine: engine)
+                BoardView(
+                    engine: engine,
+                    hapticsEnabled: hapticsEnabled,
+                    animationsEnabled: animationsEnabled
+                )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal, 12)
 
@@ -103,7 +120,11 @@ struct ContentView: View {
                         .foregroundStyle(Color.black.opacity(0.6))
 
                     Button {
-                        withAnimation(.easeOut(duration: 0.2)) {
+                        if animationsEnabled {
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                showHowToPlay = false
+                            }
+                        } else {
                             showHowToPlay = false
                         }
                     } label: {
@@ -134,6 +155,13 @@ struct ContentView: View {
                 .transition(.opacity.combined(with: .scale))
             }
         }
+        .sheet(isPresented: $showSettings) {
+            SettingsView(
+                hapticsEnabled: $hapticsEnabled,
+                animationsEnabled: $animationsEnabled,
+                showHowToPlay: $showHowToPlay
+            )
+        }
     }
 
     private var winnerTitle: String {
@@ -146,6 +174,37 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+}
+
+private struct SettingsView: View {
+    @Binding var hapticsEnabled: Bool
+    @Binding var animationsEnabled: Bool
+    @Binding var showHowToPlay: Bool
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Feedback") {
+                    Toggle("Haptics", isOn: $hapticsEnabled)
+                    Toggle("Animations", isOn: $animationsEnabled)
+                }
+
+                Section("Help") {
+                    Button("Show Tutorial") {
+                        showHowToPlay = true
+                        dismiss()
+                    }
+                }
+            }
+            .navigationTitle("Settings")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
 }
 
 private struct ScorePill: View {
