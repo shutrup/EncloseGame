@@ -13,8 +13,12 @@ struct BoardView: View {
         GeometryReader { proxy in
             let size = min(proxy.size.width, proxy.size.height)
             let center = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
-            let cell = size / 10.5
-            let symbolSize = max(18, cell * 0.7)
+            let bounds = boardBounds()
+            let spanX = bounds.maxX - bounds.minX
+            let spanY = bounds.maxY - bounds.minY
+            let scale = (size / max(spanX, spanY)) * 0.85
+            let cell = scale * 2.0
+            let symbolSize = max(16, cell * 0.8)
 
             Canvas { context, _ in
                 for edge in engine.board.edges {
@@ -22,8 +26,8 @@ struct BoardView: View {
                     let b = engine.board.nodes[edge.b].position
 
                     let path = Path { p in
-                        p.move(to: project(a, center: center, size: size))
-                        p.addLine(to: project(b, center: center, size: size))
+                        p.move(to: project(a, center: center, scale: scale, bounds: bounds))
+                        p.addLine(to: project(b, center: center, scale: scale, bounds: bounds))
                     }
 
                     let isActive = engine.state.occupiedEdges.contains(edge.id)
@@ -35,7 +39,7 @@ struct BoardView: View {
                 }
 
                 for node in engine.board.nodes {
-                    let pt = project(node.position, center: center, size: size)
+                    let pt = project(node.position, center: center, scale: scale, bounds: bounds)
                     let rect = CGRect(x: pt.x - 2, y: pt.y - 2, width: 4, height: 4)
                     context.fill(Path(ellipseIn: rect), with: .color(nodeColor))
                 }
@@ -49,7 +53,7 @@ struct BoardView: View {
                         x: points.map(\.x).reduce(0, +) / CGFloat(points.count),
                         y: points.map(\.y).reduce(0, +) / CGFloat(points.count)
                     )
-                    let screen = project(centerPoint, center: center, size: size)
+                    let screen = project(centerPoint, center: center, scale: scale, bounds: bounds)
                     let text = Text(symbol)
                         .font(.system(size: symbolSize, weight: .bold, design: .rounded))
                         .foregroundStyle(color)
@@ -68,26 +72,44 @@ struct BoardView: View {
         }
     }
 
-    private func project(_ point: CGPoint, center: CGPoint, size: CGFloat) -> CGPoint {
-        let scale: CGFloat = size / 10.5
-        return CGPoint(x: center.x + point.x * scale, y: center.y - point.y * scale)
+    private func project(_ point: CGPoint, center: CGPoint, scale: CGFloat, bounds: (minX: CGFloat, maxX: CGFloat, minY: CGFloat, maxY: CGFloat)) -> CGPoint {
+        let midX = (bounds.minX + bounds.maxX) / 2.0
+        let midY = (bounds.minY + bounds.maxY) / 2.0
+        return CGPoint(
+            x: center.x + (point.x - midX) * scale,
+            y: center.y - (point.y - midY) * scale
+        )
     }
 
     private func nearestEdge(to location: CGPoint, in size: CGSize) -> Int? {
         let center = CGPoint(x: size.width / 2, y: size.height / 2)
-        let scale: CGFloat = min(size.width, size.height) / 12.0
+        let bounds = boardBounds()
+        let spanX = bounds.maxX - bounds.minX
+        let spanY = bounds.maxY - bounds.minY
+        let scale = (min(size.width, size.height) / max(spanX, spanY)) * 0.85
 
         var best: (id: Int, dist: CGFloat)?
         for edge in engine.board.edges {
             let a = engine.board.nodes[edge.a].position
             let b = engine.board.nodes[edge.b].position
             let midpoint = CGPoint(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
-            let screen = CGPoint(x: center.x + midpoint.x * scale, y: center.y - midpoint.y * scale)
+            let screen = project(midpoint, center: center, scale: scale, bounds: bounds)
             let d = hypot(screen.x - location.x, screen.y - location.y)
             if d < (best?.dist ?? .greatestFiniteMagnitude) {
                 best = (edge.id, d)
             }
         }
         return best?.dist ?? .greatestFiniteMagnitude < 28 ? best?.id : nil
+    }
+
+    private func boardBounds() -> (minX: CGFloat, maxX: CGFloat, minY: CGFloat, maxY: CGFloat) {
+        let xs = engine.board.nodes.map { $0.position.x }
+        let ys = engine.board.nodes.map { $0.position.y }
+        return (
+            minX: xs.min() ?? 0,
+            maxX: xs.max() ?? 0,
+            minY: ys.min() ?? 0,
+            maxY: ys.max() ?? 0
+        )
     }
 }

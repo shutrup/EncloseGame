@@ -7,16 +7,17 @@ struct BoardLayout {
     let zones: [Zone]
 
     static let diamond16: BoardLayout = {
-        let cellSize: CGFloat = 1.0
+        let cellSize: CGFloat = 2.0
         let half: CGFloat = cellSize / 2.0
 
         // 7 rows: 1, 2, 3, 4, 3, 2, 1 (total 16), no side single protrusions.
         let counts = [1, 2, 3, 4, 3, 2, 1]
-        let yStart = 3
+        let yStart = (counts.count - 1) / 2
+        let step: CGFloat = 2.0
         let rows: [(y: CGFloat, xs: [CGFloat])] = counts.enumerated().map { index, count in
-            let y = CGFloat(yStart - index)
+            let y = CGFloat(yStart - index) * step
             let start = -CGFloat(count - 1) / 2.0
-            let xs = (0..<count).map { start + CGFloat($0) }
+            let xs = (0..<count).map { (start + CGFloat($0)) * step }
             return (y, xs)
         }
 
