@@ -1,13 +1,19 @@
 import SwiftUI
+import UIKit
 
 struct BoardView: View {
     @ObservedObject var engine: GameEngine
 
+    @State private var hoveredEdgeId: Int?
+    @State private var lastPlayedEdgeId: Int?
+
     private let inactiveLine = Color(red: 0.78, green: 0.80, blue: 0.83)
     private let activeLine = Color(red: 0.10, green: 0.11, blue: 0.13)
+    private let hoverLine = Color.black.opacity(0.35)
     private let xColor = Color(red: 0.12, green: 0.40, blue: 0.80)
     private let oColor = Color(red: 0.78, green: 0.18, blue: 0.18)
     private let nodeColor = Color(red: 0.55, green: 0.58, blue: 0.62)
+    private let haptic = UIImpactFeedbackGenerator(style: .rigid)
 
     var body: some View {
         GeometryReader { proxy in
@@ -31,8 +37,14 @@ struct BoardView: View {
                     }
 
                     let isActive = engine.state.occupiedEdges.contains(edge.id)
+                    let isHovered = hoveredEdgeId == edge.id && !isActive
+                    let isJustPlayed = lastPlayedEdgeId == edge.id
+
                     if isActive {
-                        context.stroke(path, with: .color(activeLine), lineWidth: 4.0)
+                        let width: CGFloat = isJustPlayed ? 5.0 : 4.0
+                        context.stroke(path, with: .color(activeLine), lineWidth: width)
+                    } else if isHovered {
+                        context.stroke(path, with: .color(hoverLine), lineWidth: 4.0)
                     } else {
                         context.stroke(path, with: .color(inactiveLine), lineWidth: 3)
                     }
@@ -63,10 +75,33 @@ struct BoardView: View {
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if let edgeId = nearestEdge(to: value.location, in: proxy.size) {
+                            if engine.state.occupiedEdges.contains(edgeId) {
+                                hoveredEdgeId = nil
+                            } else {
+                                hoveredEdgeId = edgeId
+                            }
+                        } else {
+                            hoveredEdgeId = nil
+                        }
+                    }
                     .onEnded { value in
                         if let edgeId = nearestEdge(to: value.location, in: proxy.size) {
-                            _ = engine.play(edgeId: edgeId)
+                            let didPlay = engine.play(edgeId: edgeId)
+                            if didPlay {
+                                haptic.impactOccurred()
+                                withAnimation(.easeOut(duration: 0.15)) {
+                                    lastPlayedEdgeId = edgeId
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    if lastPlayedEdgeId == edgeId {
+                                        lastPlayedEdgeId = nil
+                                    }
+                                }
+                            }
                         }
+                        hoveredEdgeId = nil
                     }
             )
         }
