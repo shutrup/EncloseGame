@@ -44,9 +44,10 @@ struct BoardView: View {
 
                     let isActive = engine.state.occupiedEdges.contains(edge.id)
                     if isActive {
-                        context.addFilter(.shadow(color: glowColor, radius: 6, x: 0, y: 0))
+                        var glow = context
+                        glow.addFilter(.shadow(color: glowColor, radius: 6, x: 0, y: 0))
+                        glow.stroke(path, with: .color(activeLine), lineWidth: 3.5)
                         context.stroke(path, with: .color(activeLine), lineWidth: 3.5)
-                        context.filters.removeAll()
                     } else {
                         context.stroke(path, with: .color(inactiveLine), lineWidth: 2)
                     }
