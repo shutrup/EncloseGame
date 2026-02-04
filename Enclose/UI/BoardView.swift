@@ -7,9 +7,9 @@ struct BoardView: View {
     @State private var hoveredEdgeId: Int?
     @State private var lastPlayedEdgeId: Int?
 
-    private let inactiveLine = Color(red: 0.78, green: 0.80, blue: 0.83)
-    private let activeLine = Color(red: 0.10, green: 0.11, blue: 0.13)
-    private let hoverLine = Color.black.opacity(0.35)
+    private let inactiveLine = Color(red: 0.82, green: 0.84, blue: 0.87)
+    private let activeLine = Color(red: 0.08, green: 0.09, blue: 0.11)
+    private let hoverLine = Color.black.opacity(0.28)
     private let xColor = Color(red: 0.12, green: 0.40, blue: 0.80)
     private let oColor = Color(red: 0.78, green: 0.18, blue: 0.18)
     private let nodeColor = Color(red: 0.55, green: 0.58, blue: 0.62)
@@ -24,7 +24,7 @@ struct BoardView: View {
             let spanY = bounds.maxY - bounds.minY
             let scale = (size / max(spanX, spanY)) * 0.95
             let cell = scale * 2.0
-            let symbolSize = max(18, cell * 0.9)
+            let symbolSize = max(18, cell * 0.85)
 
             Canvas { context, _ in
                 for edge in engine.board.edges {
@@ -41,18 +41,18 @@ struct BoardView: View {
                     let isJustPlayed = lastPlayedEdgeId == edge.id
 
                     if isActive {
-                        let width: CGFloat = isJustPlayed ? 5.0 : 4.0
+                        let width: CGFloat = isJustPlayed ? 5.5 : 4.0
                         context.stroke(path, with: .color(activeLine), lineWidth: width)
                     } else if isHovered {
-                        context.stroke(path, with: .color(hoverLine), lineWidth: 4.0)
+                        context.stroke(path, with: .color(hoverLine), lineWidth: 3.5)
                     } else {
-                        context.stroke(path, with: .color(inactiveLine), lineWidth: 3)
+                        context.stroke(path, with: .color(inactiveLine), lineWidth: 2.5)
                     }
                 }
 
                 for node in engine.board.nodes {
                     let pt = project(node.position, center: center, scale: scale, bounds: bounds)
-                    let rect = CGRect(x: pt.x - 3, y: pt.y - 3, width: 6, height: 6)
+                    let rect = CGRect(x: pt.x - 2.5, y: pt.y - 2.5, width: 5, height: 5)
                     context.fill(Path(ellipseIn: rect), with: .color(nodeColor))
                 }
 
@@ -91,10 +91,10 @@ struct BoardView: View {
                             let didPlay = engine.play(edgeId: edgeId)
                             if didPlay {
                                 haptic.impactOccurred()
-                                withAnimation(.easeOut(duration: 0.15)) {
+                                withAnimation(.easeOut(duration: 0.18)) {
                                     lastPlayedEdgeId = edgeId
                                 }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
                                     if lastPlayedEdgeId == edgeId {
                                         lastPlayedEdgeId = nil
                                     }
