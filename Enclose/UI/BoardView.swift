@@ -16,9 +16,9 @@ struct BoardView: View {
             let bounds = boardBounds()
             let spanX = bounds.maxX - bounds.minX
             let spanY = bounds.maxY - bounds.minY
-            let scale = (size / max(spanX, spanY)) * 0.85
+            let scale = (size / max(spanX, spanY)) * 0.95
             let cell = scale * 2.0
-            let symbolSize = max(16, cell * 0.8)
+            let symbolSize = max(18, cell * 0.9)
 
             Canvas { context, _ in
                 for edge in engine.board.edges {
@@ -32,15 +32,15 @@ struct BoardView: View {
 
                     let isActive = engine.state.occupiedEdges.contains(edge.id)
                     if isActive {
-                        context.stroke(path, with: .color(activeLine), lineWidth: 3.0)
+                        context.stroke(path, with: .color(activeLine), lineWidth: 4.0)
                     } else {
-                        context.stroke(path, with: .color(inactiveLine), lineWidth: 2)
+                        context.stroke(path, with: .color(inactiveLine), lineWidth: 3)
                     }
                 }
 
                 for node in engine.board.nodes {
                     let pt = project(node.position, center: center, scale: scale, bounds: bounds)
-                    let rect = CGRect(x: pt.x - 2, y: pt.y - 2, width: 4, height: 4)
+                    let rect = CGRect(x: pt.x - 3, y: pt.y - 3, width: 6, height: 6)
                     context.fill(Path(ellipseIn: rect), with: .color(nodeColor))
                 }
 
@@ -86,7 +86,7 @@ struct BoardView: View {
         let bounds = boardBounds()
         let spanX = bounds.maxX - bounds.minX
         let spanY = bounds.maxY - bounds.minY
-        let scale = (min(size.width, size.height) / max(spanX, spanY)) * 0.85
+        let scale = (min(size.width, size.height) / max(spanX, spanY)) * 0.95
 
         var best: (id: Int, dist: CGFloat)?
         for edge in engine.board.edges {
@@ -99,7 +99,7 @@ struct BoardView: View {
                 best = (edge.id, d)
             }
         }
-        return best?.dist ?? .greatestFiniteMagnitude < 28 ? best?.id : nil
+        return best?.dist ?? .greatestFiniteMagnitude < 40 ? best?.id : nil
     }
 
     private func boardBounds() -> (minX: CGFloat, maxX: CGFloat, minY: CGFloat, maxY: CGFloat) {
