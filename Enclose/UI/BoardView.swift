@@ -8,10 +8,11 @@ struct BoardView: View {
 
     @State private var hoveredEdgeId: Int?
     @State private var lastPlayedEdgeId: Int?
+    @State private var lastCapturedZoneIds: Set<Int> = []
 
     private let inactiveLine = Color(red: 0.82, green: 0.84, blue: 0.87)
     private let activeLine = Color(red: 0.08, green: 0.09, blue: 0.11)
-    private let hoverLine = Color.black.opacity(0.28)
+    private let hoverLine = Color.black.opacity(0.4)
     private let xColor = Color(red: 0.12, green: 0.40, blue: 0.80)
     private let oColor = Color(red: 0.78, green: 0.18, blue: 0.18)
     private let nodeColor = Color(red: 0.55, green: 0.58, blue: 0.62)
@@ -62,6 +63,7 @@ struct BoardView: View {
                     guard case let .player(player) = zone.owner else { continue }
                     let color: Color = player == .x ? xColor : oColor
                     let symbol = player == .x ? "X" : "O"
+                    let isJustCaptured = lastCapturedZoneIds.contains(zone.id)
                     let points = zone.nodeIds.map { engine.board.nodes[$0].position }
                     let centerPoint = CGPoint(
                         x: points.map(\.x).reduce(0, +) / CGFloat(points.count),
@@ -69,7 +71,7 @@ struct BoardView: View {
                     )
                     let screen = project(centerPoint, center: center, scale: scale, bounds: bounds)
                     let text = Text(symbol)
-                        .font(.system(size: symbolSize, weight: .bold, design: .rounded))
+                        .font(.system(size: isJustCaptured ? symbolSize * 1.1 : symbolSize, weight: .bold, design: .rounded))
                         .foregroundStyle(color)
                     context.draw(text, at: screen)
                 }
@@ -90,10 +92,16 @@ struct BoardView: View {
                     }
                     .onEnded { value in
                         if let edgeId = nearestEdge(to: value.location, in: proxy.size) {
+                            let beforeOwners = engine.state.zones.map { $0.owner }
                             let didPlay = engine.play(edgeId: edgeId)
                             if didPlay {
                                 if hapticsEnabled {
                                     haptic.impactOccurred()
+                                }
+                                let capturedIds = capturedZoneIds(before: beforeOwners)
+                                if hapticsEnabled && !capturedIds.isEmpty {
+                                    let captureHaptic = UIImpactFeedbackGenerator(style: .heavy)
+                                    captureHaptic.impactOccurred()
                                 }
                                 if animationsEnabled {
                                     withAnimation(.easeOut(duration: 0.18)) {
@@ -102,6 +110,14 @@ struct BoardView: View {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
                                         if lastPlayedEdgeId == edgeId {
                                             lastPlayedEdgeId = nil
+                                        }
+                                    }
+                                    if !capturedIds.isEmpty {
+                                        withAnimation(.spring(response: 0.22, dampingFraction: 0.6)) {
+                                            lastCapturedZoneIds = capturedIds
+                                        }
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                            lastCapturedZoneIds.removeAll()
                                         }
                                     }
                                 } else {
@@ -155,5 +171,15 @@ struct BoardView: View {
             minY: ys.min() ?? 0,
             maxY: ys.max() ?? 0
         )
+    }
+
+    private func capturedZoneIds(before: [ZoneOwner]) -> Set<Int> {
+        var captured: Set<Int> = []
+        for (index, zone) in engine.state.zones.enumerated() {
+            if before[index] == .none && zone.owner != .none {
+                captured.insert(zone.id)
+            }
+        }
+        return captured
     }
 }
