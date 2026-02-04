@@ -12,6 +12,10 @@ struct ContentView: View {
             }
             .font(.headline)
 
+            Text(engine.state.currentPlayer == .x ? "X Turn" : "O Turn")
+                .font(.subheadline)
+                .padding(.bottom, 4)
+
             BoardView(engine: engine)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -20,6 +24,7 @@ struct ContentView: View {
             }
         }
         .padding()
+        .background(Color(.systemGroupedBackground))
     }
 }
 
