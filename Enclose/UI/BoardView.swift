@@ -3,36 +3,20 @@ import SwiftUI
 struct BoardView: View {
     @ObservedObject var engine: GameEngine
 
-    private let inactiveLine = Color(red: 0.16, green: 0.18, blue: 0.22)
-    private let activeLine = Color(red: 0.90, green: 0.92, blue: 0.94)
-    private let glowColor = Color.white.opacity(0.25)
-    private let xFill = Color(red: 0.29, green: 0.64, blue: 1.0)
-    private let oFill = Color(red: 1.0, green: 0.42, blue: 0.36)
-    private let nodeColor = Color(red: 0.22, green: 0.25, blue: 0.30)
+    private let inactiveLine = Color(red: 0.78, green: 0.80, blue: 0.83)
+    private let activeLine = Color(red: 0.10, green: 0.11, blue: 0.13)
+    private let xColor = Color(red: 0.12, green: 0.40, blue: 0.80)
+    private let oColor = Color(red: 0.78, green: 0.18, blue: 0.18)
+    private let nodeColor = Color(red: 0.55, green: 0.58, blue: 0.62)
 
     var body: some View {
         GeometryReader { proxy in
             let size = min(proxy.size.width, proxy.size.height)
             let center = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
+            let cell = size / 10.5
+            let symbolSize = max(18, cell * 0.7)
 
             Canvas { context, _ in
-                for zone in engine.state.zones {
-                    guard case let .player(player) = zone.owner else { continue }
-                    let color: Color = player == .x ? xFill : oFill
-
-                    let points = zone.nodeIds.map { engine.board.nodes[$0].position }
-                    let path = Path { p in
-                        guard let first = points.first else { return }
-                        p.move(to: project(first, center: center, size: size))
-                        for pt in points.dropFirst() {
-                            p.addLine(to: project(pt, center: center, size: size))
-                        }
-                        p.closeSubpath()
-                    }
-
-                    context.fill(path, with: .color(color.opacity(0.25)))
-                }
-
                 for edge in engine.board.edges {
                     let a = engine.board.nodes[edge.a].position
                     let b = engine.board.nodes[edge.b].position
@@ -44,10 +28,7 @@ struct BoardView: View {
 
                     let isActive = engine.state.occupiedEdges.contains(edge.id)
                     if isActive {
-                        var glow = context
-                        glow.addFilter(.shadow(color: glowColor, radius: 6, x: 0, y: 0))
-                        glow.stroke(path, with: .color(activeLine), lineWidth: 3.5)
-                        context.stroke(path, with: .color(activeLine), lineWidth: 3.5)
+                        context.stroke(path, with: .color(activeLine), lineWidth: 3.0)
                     } else {
                         context.stroke(path, with: .color(inactiveLine), lineWidth: 2)
                     }
@@ -57,6 +38,22 @@ struct BoardView: View {
                     let pt = project(node.position, center: center, size: size)
                     let rect = CGRect(x: pt.x - 2, y: pt.y - 2, width: 4, height: 4)
                     context.fill(Path(ellipseIn: rect), with: .color(nodeColor))
+                }
+
+                for zone in engine.state.zones {
+                    guard case let .player(player) = zone.owner else { continue }
+                    let color: Color = player == .x ? xColor : oColor
+                    let symbol = player == .x ? "X" : "O"
+                    let points = zone.nodeIds.map { engine.board.nodes[$0].position }
+                    let centerPoint = CGPoint(
+                        x: points.map(\.x).reduce(0, +) / CGFloat(points.count),
+                        y: points.map(\.y).reduce(0, +) / CGFloat(points.count)
+                    )
+                    let screen = project(centerPoint, center: center, size: size)
+                    let text = Text(symbol)
+                        .font(.system(size: symbolSize, weight: .bold, design: .rounded))
+                        .foregroundStyle(color)
+                    context.draw(text, at: screen)
                 }
             }
             .contentShape(Rectangle())

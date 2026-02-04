@@ -6,18 +6,19 @@ struct BoardLayout {
     let edges: [Edge]
     let zones: [Zone]
 
-    static let diamond19: BoardLayout = {
+    static let diamond16: BoardLayout = {
         let cellSize: CGFloat = 1.0
         let half: CGFloat = cellSize / 2.0
 
-        // 5 rows: 1, 4, 9, 4, 1 (total 19)
-        let rows: [(y: CGFloat, xs: [CGFloat])] = [
-            (2, [0]),
-            (1, [-1.5, -0.5, 0.5, 1.5]),
-            (0, [-4, -3, -2, -1, 0, 1, 2, 3, 4]),
-            (-1, [-1.5, -0.5, 0.5, 1.5]),
-            (-2, [0])
-        ]
+        // 7 rows: 1, 2, 3, 4, 3, 2, 1 (total 16), no side single protrusions.
+        let counts = [1, 2, 3, 4, 3, 2, 1]
+        let yStart = 3
+        let rows: [(y: CGFloat, xs: [CGFloat])] = counts.enumerated().map { index, count in
+            let y = CGFloat(yStart - index)
+            let start = -CGFloat(count - 1) / 2.0
+            let xs = (0..<count).map { start + CGFloat($0) }
+            return (y, xs)
+        }
 
         struct Corner: Hashable {
             let x: CGFloat
