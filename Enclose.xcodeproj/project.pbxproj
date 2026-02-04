@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		9FBBBBBBBBBBBBBBBBBBBBBB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 15AC0B582F33860700876B9C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 15AC0B5F2F33860700876B9C;
+			remoteInfo = Enclose;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		15AC0B602F33860700876B9C /* Enclose.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Enclose.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F1111111111111111111111 /* EncloseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EncloseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = Enclose;
 			sourceTree = "<group>";
 		};
+		9F2222222222222222222222 /* EncloseTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EncloseTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		15AC0B5D2F33860700876B9C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9F4444444444444444444444 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				15AC0B622F33860700876B9C /* Enclose */,
+				9F2222222222222222222222 /* EncloseTests */,
 				15AC0B612F33860700876B9C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				15AC0B602F33860700876B9C /* Enclose.app */,
+				9F1111111111111111111111 /* EncloseTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 15AC0B602F33860700876B9C /* Enclose.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9F3333333333333333333333 /* EncloseTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9FAAAAAAAAAAAAAAAAAAAAAAAA /* Build configuration list for PBXNativeTarget "EncloseTests" */;
+			buildPhases = (
+				9F6666666666666666666666 /* Sources */,
+				9F4444444444444444444444 /* Frameworks */,
+				9F5555555555555555555555 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9F7777777777777777777777 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9F2222222222222222222222 /* EncloseTests */,
+			);
+			name = EncloseTests;
+			packageProductDependencies = (
+			);
+			productName = EncloseTests;
+			productReference = 9F1111111111111111111111 /* EncloseTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					15AC0B5F2F33860700876B9C = {
 						CreatedOnToolsVersion = 26.1;
+					};
+					9F3333333333333333333333 = {
+						CreatedOnToolsVersion = 26.1;
+						TestTargetID = 15AC0B5F2F33860700876B9C;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				15AC0B5F2F33860700876B9C /* Enclose */,
+				9F3333333333333333333333 /* EncloseTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		15AC0B5E2F33860700876B9C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9F5555555555555555555555 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9F6666666666666666666666 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9F7777777777777777777777 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 15AC0B5F2F33860700876B9C /* Enclose */;
+			targetProxy = 9FBBBBBBBBBBBBBBBBBBBBBB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		15AC0B692F33860900876B9C /* Debug */ = {
@@ -310,6 +385,38 @@
 			};
 			name = Release;
 		};
+		9F8888888888888888888888 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PP55TUKCZU;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				PRODUCT_BUNDLE_IDENTIFIER = shurup.EncloseTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Enclose.app/Enclose";
+			};
+			name = Debug;
+		};
+		9F9999999999999999999999 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PP55TUKCZU;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				PRODUCT_BUNDLE_IDENTIFIER = shurup.EncloseTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Enclose.app/Enclose";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -327,6 +434,15 @@
 			buildConfigurations = (
 				15AC0B6C2F33860900876B9C /* Debug */,
 				15AC0B6D2F33860900876B9C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9FAAAAAAAAAAAAAAAAAAAAAAAA /* Build configuration list for PBXNativeTarget "EncloseTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9F8888888888888888888888 /* Debug */,
+				9F9999999999999999999999 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
