@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var engine = GameEngine()
+    @State private var showHowToPlay = true
 
     var body: some View {
         ZStack {
@@ -87,6 +88,50 @@ struct ContentView: View {
                 .cornerRadius(16)
                 .shadow(color: Color.black.opacity(0.12), radius: 16, x: 0, y: 8)
                 .padding(.horizontal, 28)
+            }
+
+            if showHowToPlay && !engine.state.isGameOver {
+                VStack(spacing: 8) {
+                    Text("Draw one line")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.black.opacity(0.85))
+                    Text("Close a square to claim it")
+                        .font(.caption)
+                        .foregroundStyle(Color.black.opacity(0.6))
+                    Text("Claiming gives an extra turn")
+                        .font(.caption)
+                        .foregroundStyle(Color.black.opacity(0.6))
+
+                    Button {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            showHowToPlay = false
+                        }
+                    } label: {
+                        Text("Got it")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.black.opacity(0.85))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(Color.black.opacity(0.06))
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.black.opacity(0.18), lineWidth: 1)
+                            )
+                            .clipShape(Capsule())
+                    }
+                    .padding(.top, 4)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .background(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.black.opacity(0.12), lineWidth: 1)
+                )
+                .cornerRadius(14)
+                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 6)
+                .padding(.horizontal, 28)
+                .transition(.opacity.combined(with: .scale))
             }
         }
     }
