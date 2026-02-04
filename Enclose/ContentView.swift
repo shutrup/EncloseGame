@@ -71,12 +71,12 @@ struct ContentView: View {
 
                 VStack(spacing: 12) {
                     Text(winnerTitle)
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(Color.black.opacity(0.9))
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(Color.black.opacity(0.92))
 
                     Text("X \(engine.state.scoreX) — \(engine.state.scoreO) O")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Color.black.opacity(0.6))
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(Color.black.opacity(0.55))
 
                     Button {
                         engine.reset()
@@ -86,24 +86,30 @@ struct ContentView: View {
                             .foregroundStyle(Color.black.opacity(0.9))
                             .padding(.horizontal, 22)
                             .padding(.vertical, 12)
-                            .background(Color.black.opacity(0.06))
+                            .background(Color.black.opacity(0.08))
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.black.opacity(0.18), lineWidth: 1)
+                                    .stroke(Color.black.opacity(0.20), lineWidth: 1)
                             )
                             .clipShape(Capsule())
                     }
                     .padding(.top, 6)
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 20)
-                .background(Color.white)
+                .padding(.horizontal, 26)
+                .padding(.vertical, 22)
+                .background(
+                    LinearGradient(
+                        colors: [Color.white, Color(red: 0.97, green: 0.97, blue: 0.98)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.black.opacity(0.12), lineWidth: 1)
+                        .stroke(Color.black.opacity(0.14), lineWidth: 1)
                 )
                 .cornerRadius(16)
-                .shadow(color: Color.black.opacity(0.12), radius: 16, x: 0, y: 8)
+                .shadow(color: Color.black.opacity(0.16), radius: 18, x: 0, y: 10)
                 .padding(.horizontal, 28)
             }
 
