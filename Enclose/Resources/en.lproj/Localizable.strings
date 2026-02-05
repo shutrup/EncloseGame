@@ -1,0 +1,63 @@
+/* English */
+"turn.x" = "X Turn";
+"turn.o" = "O Turn";
+"new_game" = "New Game";
+"play_again" = "Play Again";
+"winner.draw" = "Draw";
+"winner.x" = "X Wins";
+"winner.o" = "O Wins";
+"menu.settings" = "Settings";
+"menu.board.size" = "Size";
+"menu.board.mini" = "Mini (13)";
+"menu.board.standard" = "Standard (25)";
+"menu.board.large" = "Large (41)";
+"menu.feedback" = "Feedback";
+"menu.haptics" = "Haptics";
+"menu.animations" = "Animations";
+"menu.help" = "Help";
+"menu.about" = "About";
+"menu.show_tutorial" = "Show Tutorial";
+"done" = "Done";
+"tutorial.got_it" = "Got it";
+"tutorial.line1" = "Draw one line";
+"tutorial.line2" = "Close a square to claim it";
+"tutorial.line3" = "Claiming gives an extra turn";
+"score.x" = "X";
+"score.o" = "O";
+
+/* Rules */
+"rules.title1" = "Draw one line";
+"rules.desc1" = "Connect any two adjacent dots with a line. You can only draw lines that haven't been drawn yet.";
+"rules.title2" = "Close a square";
+"rules.desc2" = "When you draw the fourth side of a square, you capture it! Your symbol (X or O) will appear inside.";
+"rules.title3" = "Extra Turn";
+"rules.desc3" = "If you capture a square, you MUST take another turn. You can chain multiple captures in a row!";
+"rules.title4" = "Winning";
+"rules.desc4" = "The game ends when all lines are drawn. The player with the most captured squares wins.";
+
+/* Phase 2/4 UI */
+"menu.play" = "Play";
+"menu.pvp" = "PvP (Local)";
+"menu.single_player" = "Single Player";
+"difficulty.easy" = "Easy";
+"difficulty.medium" = "Medium";
+
+/* Interactive Tutorial */
+"tutorial.step.welcome" = "Welcome to Enclose! Let's learn to play.";
+"tutorial.step.draw_line" = "Tap the space between these two dots to draw a line.";
+"tutorial.step.close_square" = "Great! Now close this square to capture it.";
+"tutorial.step.extra_turn" = "Capturing gives you an extra turn! Capture the next one.";
+"tutorial.step.completed" = "You're ready! Most squares wins.";
+
+/* Tutorial Titles */
+"tutorial.title.welcome" = "Welcome";
+"tutorial.title.draw_line" = "Drawing Lines";
+"tutorial.title.close_square" = "Claiming";
+"tutorial.title.extra_turn" = "Combo";
+"tutorial.title.completed" = "All Set!";
+
+"menu.refresh" = "Reset";
+
+"menu.sound" = "Sound";
+
+"turn.ai" = "AI Thinking...";

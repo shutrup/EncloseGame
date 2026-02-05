@@ -1,7 +1,7 @@
 import Foundation
 import CoreGraphics
 
-enum Player: String {
+enum Player: String, Equatable {
     case x
     case o
 
@@ -13,18 +13,18 @@ enum ZoneOwner: Equatable {
     case player(Player)
 }
 
-struct Node: Hashable {
+struct Node: Hashable, Identifiable {
     let id: Int
     let position: CGPoint
 }
 
-struct Edge: Hashable {
+struct Edge: Hashable, Identifiable {
     let id: Int
     let a: Int
     let b: Int
 }
 
-struct Zone {
+struct Zone: Identifiable, Equatable {
     let id: Int
     let nodeIds: [Int]
     let edgeIds: [Int]

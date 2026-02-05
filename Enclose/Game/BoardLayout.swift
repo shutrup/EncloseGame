@@ -1,20 +1,38 @@
 import Foundation
 import CoreGraphics
 
+enum BoardPreset: String, CaseIterable, Identifiable {
+    case mini
+    case standard
+    case large
+
+    var id: String { rawValue }
+
+    var rows: [Int] {
+        switch self {
+        case .mini:
+            return [1, 3, 5, 3, 1]
+        case .standard:
+            return [1, 3, 5, 7, 5, 3, 1]
+        case .large:
+            return [1, 3, 5, 7, 9, 7, 5, 3, 1]
+        }
+    }
+}
+
 struct BoardLayout {
     let nodes: [Node]
     let edges: [Edge]
     let zones: [Zone]
 
-    static let diamond25: BoardLayout = {
+    static func from(rows: [Int]) -> BoardLayout {
         let cellSize: CGFloat = 2.0
         let half: CGFloat = cellSize / 2.0
 
-        // 7 rows: 1, 3, 5, 7, 5, 3, 1 (total 25). Odd counts keep perfect grid alignment.
-        let counts = [1, 3, 5, 7, 5, 3, 1]
-        let yStart = (counts.count - 1) / 2
+        // Odd counts keep perfect grid alignment.
+        let yStart = (rows.count - 1) / 2
         let step: CGFloat = 2.0
-        let rows: [(y: CGFloat, xs: [CGFloat])] = counts.enumerated().map { index, count in
+        let rowDefs: [(y: CGFloat, xs: [CGFloat])] = rows.enumerated().map { index, count in
             let y = CGFloat(yStart - index) * step
             let start = -CGFloat(count - 1) / 2.0
             let xs = (0..<count).map { (start + CGFloat($0)) * step }
@@ -51,7 +69,7 @@ struct BoardLayout {
         }
 
         var zoneId = 0
-        for row in rows {
+        for row in rowDefs {
             for x in row.xs {
                 let topLeft = nodeId(x: x - half, y: row.y + half)
                 let topRight = nodeId(x: x + half, y: row.y + half)
@@ -75,5 +93,7 @@ struct BoardLayout {
         }
 
         return BoardLayout(nodes: nodes, edges: edges, zones: zones)
-    }()
+    }
+
+    static let diamond25 = BoardLayout.from(rows: BoardPreset.standard.rows)
 }
