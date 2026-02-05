@@ -95,22 +95,64 @@
 
 ---
 
-## Remaining Optional Enhancements
+## Task 7: Board Size Presets
+ 
+ **Status:** Done
+ 
+ **Features:**
+ - Mini (13x), Standard (25x), Large (41x) presets
+ - Settings picker with size indication
+ - Game engine support for dynamic board generation
+ - Auto-reset on change (via AppStorage)
+ 
+ ---
+ 
+## Task 8: Localization
+ 
+ **Status:** Done
+ 
+ **Features:**
+ - Full EN/RU support
+ - Localizable.strings files
+ - UI updated to use localized keys
+ 
+ ---
+ 
+ ## Current Next Step (if continuing)
+ 
+ - Maintenance / Polish
 
-1. **Icon + Launch Screen**
-   - Define app icon style
-   - Simple launch screen (board silhouette)
+## 6. Phase 3: Interactive Onboarding
+**Status:** Done
+**Features:**
+- `TutorialManager` state machine.
+- Interactive overlay in `GameView`.
+- Step-by-step guidance strings (RU/EN).
 
-2. **Board size selector (future)**
-   - Small / Medium / Large presets
+## 7. Phase 4: UI Polish & Design System
+**Status:** Done
+**Features:**
+- **Dark Theme:** Unified `AppTheme` (Black background, dark surface cards).
+- **Floating TabBar:** Replaced native tab bar with custom floating capsule.
+- **Rules Redesign:** Detailed visual cards for better readability.
+- **Splash Screen:** Premium "self-drawing square" animation.
 
-3. **Localization (future)**
-   - RU/EN strings
+## 8. Integration Fixes
+- **Audio:** Added `.wav` support to `SoundManager` (user provided wav files).
+- **Project Structure:** Registered missing Launch Screen and Tutorial files.
 
----
+## 9. Bug Fixes
+- **Tutorial:** Added missing `titleKey` to `TutorialStep` and corresponding localization keys.
 
-## Current Next Step (if continuing)
+## 10. UI Consistency Fix
+- **Theme:** Forced Light Mode globally in `EncloseApp` to prevent mixed UI states.
 
-- Decide on icon/launch screen direction OR
-- Start board size presets
+## 11. Final Polish Refinements
+- **Theme:** Reverted to Adaptive Theme (Light/Dark support) using `UIColor.systemBackground` etc.
+- **UI:** Removed Interactive Tutorial as requested.
+- **UI:** Moved "New Game" menu to Toolbar (top right) for cleaner layout.
+- **Audio:** Configured `AVAudioSession` category to `.ambient` to fix playback issues.
 
+## 12. Audio Control
+- **Settings:** Added "Sound" toggle to Settings menu.
+- **Engine:** `SoundManager` now respects the user preference.

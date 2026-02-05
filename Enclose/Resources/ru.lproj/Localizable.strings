@@ -1,0 +1,63 @@
+/* Russian */
+"turn.x" = "Ход X";
+"turn.o" = "Ход O";
+"new_game" = "Новая игра";
+"play_again" = "Играть снова";
+"winner.draw" = "Ничья";
+"winner.x" = "Победа X";
+"winner.o" = "Победа O";
+"menu.settings" = "Настройки";
+"menu.board.size" = "Размер";
+"menu.board.mini" = "Мини (13)";
+"menu.board.standard" = "Стандарт (25)";
+"menu.board.large" = "Большой (41)";
+"menu.feedback" = "Отклик";
+"menu.haptics" = "Вибрация";
+"menu.animations" = "Анимации";
+"menu.help" = "Помощь";
+"menu.about" = "О приложении";
+"menu.show_tutorial" = "Обучение";
+"done" = "Готово";
+"tutorial.got_it" = "Понятно";
+"tutorial.line1" = "Проведи одну линию";
+"tutorial.line2" = "Замкни квадрат, чтобы захватить его";
+"tutorial.line3" = "Захват дает дополнительный ход";
+"score.x" = "X";
+"score.o" = "O";
+
+/* Rules */
+"rules.title1" = "Проведи линию";
+"rules.desc1" = "Соедини любые две соседние точки линией. Линии не могут пересекаться или дублироваться.";
+"rules.title2" = "Замкни квадрат";
+"rules.desc2" = "Когда ты рисуешь четвертую сторону квадрата, он становится твоим! Внутри появится твой символ (X или O).";
+"rules.title3" = "Дополнительный ход";
+"rules.desc3" = "Если ты захватил квадрат, ты ОБЯЗАН сделать еще один ход. Можно захватывать цепочки квадратов!";
+"rules.title4" = "Победа";
+"rules.desc4" = "Игра заканчивается, когда все линии нарисованы. Побеждает тот, кто захватил больше квадратов.";
+
+/* Phase 2/4 UI */
+"menu.play" = "Играть";
+"menu.pvp" = "PvP (На одном устройстве)";
+"menu.single_player" = "Одиночная игра";
+"difficulty.easy" = "Легкий";
+"difficulty.medium" = "Средний";
+
+/* Interactive Tutorial */
+"tutorial.step.welcome" = "Добро пожаловать в Enclose! Давай научимся играть.";
+"tutorial.step.draw_line" = "Нажми между этими двумя точками, чтобы провести линию.";
+"tutorial.step.close_square" = "Отлично! Теперь замкни этот квадрат, чтобы захватить его.";
+"tutorial.step.extra_turn" = "Захват дает ход! Захвати следующий квадрат.";
+"tutorial.step.completed" = "Ты готов! Побеждает тот, кто захватит больше.";
+
+/* Tutorial Titles */
+"tutorial.title.welcome" = "Добро пожаловать";
+"tutorial.title.draw_line" = "Рисование линий";
+"tutorial.title.close_square" = "Захват клеток";
+"tutorial.title.extra_turn" = "Комбо";
+"tutorial.title.completed" = "Всё готово!";
+
+"menu.refresh" = "Сброс";
+
+"menu.sound" = "Звук";
+
+"turn.ai" = "ИИ думает...";
