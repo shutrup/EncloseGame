@@ -15,14 +15,13 @@
 - [x] Added turn switch micro-feedback (status badge pulse + optional haptic).
 - [x] Added in-match quick access to Rules from game toolbar.
 - [x] Added optional near-capture hints with Settings toggle.
-- [x] Added optional high-contrast X/O marks for better readability.
 - [x] Added setup-to-game launch transition polish (quick fade/scale handoff).
 - [x] Enhanced game-over modal with winner accent and readable score advantage.
 
 ## Next Priority Improvements
 
 ### P1: Gameplay Readability
-- Improve color separation for X/O in low-contrast accessibility contexts (partially done via high-contrast marks).
+- Improve color separation for X/O in low-contrast accessibility contexts.
 
 ### P1: Motion & Feedback
 - Add optional "skip modal on draw" flow for faster rematches.

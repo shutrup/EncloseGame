@@ -6,7 +6,6 @@ struct BoardView: View {
     let hapticsEnabled: Bool
     let animationsEnabled: Bool
     let showCaptureHints: Bool
-    let highContrastMarks: Bool
     
     @State private var hoveredEdgeId: Int?
     
@@ -131,29 +130,10 @@ struct BoardView: View {
                 let cx = points.map(\.x).reduce(0, +) / CGFloat(points.count)
                 let cy = points.map(\.y).reduce(0, +) / CGFloat(points.count)
                 let screen = project(CGPoint(x: cx, y: cy), center: center, scaleFactor, bounds: bounds)
-
-                Group {
-                    if highContrastMarks {
-                        ZStack {
-                            Circle()
-                                .fill(AppTheme.background.opacity(0.9))
-                                .frame(width: max(24, scale * 1.12), height: max(24, scale * 1.12))
-                                .overlay(
-                                    Circle()
-                                        .stroke(color.opacity(0.95), lineWidth: max(1.6, scale * 0.08))
-                                )
-                                .shadow(color: color.opacity(0.32), radius: 6, y: 2)
-
-                            Text(symbol)
-                                .font(.system(size: max(16, scale * 0.74), weight: .black, design: .rounded))
-                                .foregroundStyle(color)
-                        }
-                    } else {
-                        Text(symbol)
-                            .font(.system(size: max(18, scale * 0.85), weight: .bold, design: .rounded))
-                            .foregroundStyle(color)
-                    }
-                }
+                
+                Text(symbol)
+                    .font(.system(size: max(18, scale * 0.85), weight: .bold, design: .rounded))
+                    .foregroundStyle(color)
                 .position(screen)
                 .transition(.scale(scale: 0.1).animation(.spring(response: 0.3, dampingFraction: 0.5)))
                 .id(zone.id)

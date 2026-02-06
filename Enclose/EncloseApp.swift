@@ -14,8 +14,7 @@ struct EncloseApp: App {
             "soundEnabled": true,
             "hapticsEnabled": true,
             "animationsEnabled": true,
-            "captureHintsEnabled": true,
-            "highContrastMarksEnabled": true
+            "captureHintsEnabled": true
         ])
     }
 
