@@ -12,6 +12,7 @@ struct GameView: View {
     @AppStorage("hapticsEnabled") private var hapticsEnabled = true
     @AppStorage("animationsEnabled") private var animationsEnabled = true
     @AppStorage("captureHintsEnabled") private var captureHintsEnabled = true
+    @AppStorage("highContrastMarksEnabled") private var highContrastMarksEnabled = true
     
     @State private var showingNewGameSheet = false
     @State private var turnBadgeScale: CGFloat = 1.0
@@ -184,7 +185,8 @@ struct GameView: View {
                     engine: engine,
                     hapticsEnabled: hapticsEnabled,
                     animationsEnabled: animationsEnabled,
-                    showCaptureHints: shouldShowCaptureHints
+                    showCaptureHints: shouldShowCaptureHints,
+                    highContrastMarks: highContrastMarksEnabled
                 )
                 .aspectRatio(1, contentMode: .fit)
                 .frame(width: side, height: side)

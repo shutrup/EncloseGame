@@ -15,11 +15,12 @@
 - [x] Added turn switch micro-feedback (status badge pulse + optional haptic).
 - [x] Added in-match quick access to Rules from game toolbar.
 - [x] Added optional near-capture hints with Settings toggle.
+- [x] Added optional high-contrast X/O marks for better readability.
 
 ## Next Priority Improvements
 
 ### P1: Gameplay Readability
-- Improve color separation for X/O in low-contrast accessibility contexts.
+- Improve color separation for X/O in low-contrast accessibility contexts (partially done via high-contrast marks).
 
 ### P1: Motion & Feedback
 - Introduce short transition between setup -> game (card morph/fade).

@@ -17,6 +17,7 @@
 "menu.haptics" = "Вибрация";
 "menu.animations" = "Анимации";
 "menu.capture_hints" = "Подсказки захвата";
+"menu.high_contrast_marks" = "Контрастные метки X/O";
 "menu.help" = "Помощь";
 "menu.about" = "О приложении";
 "menu.show_tutorial" = "Обучение";

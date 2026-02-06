@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("animationsEnabled") private var animationsEnabled = true
     @AppStorage("soundEnabled") private var soundEnabled = true
     @AppStorage("captureHintsEnabled") private var captureHintsEnabled = true
+    @AppStorage("highContrastMarksEnabled") private var highContrastMarksEnabled = true
     
     var body: some View {
         Form {
@@ -13,6 +14,7 @@ struct SettingsView: View {
                 Toggle(String(localized: "menu.haptics"), isOn: $hapticsEnabled)
                 Toggle(String(localized: "menu.animations"), isOn: $animationsEnabled)
                 Toggle(String(localized: "menu.capture_hints"), isOn: $captureHintsEnabled)
+                Toggle(String(localized: "menu.high_contrast_marks"), isOn: $highContrastMarksEnabled)
             }
             
             Section(String(localized: "menu.about")) {
