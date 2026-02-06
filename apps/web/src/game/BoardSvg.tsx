@@ -132,9 +132,10 @@ export function BoardSvg({ session, disabled, showHints, onEdgeClick }: BoardSvg
                   y1={a.y}
                   x2={b.x}
                   y2={b.y}
-                  stroke="transparent"
+                  stroke="rgba(255,255,255,0.001)"
                   strokeWidth={0.75}
                   strokeLinecap="round"
+                  pointerEvents="stroke"
                   onClick={() => onEdgeClick(edge.id)}
                   style={{ cursor: 'pointer' }}
                 />
