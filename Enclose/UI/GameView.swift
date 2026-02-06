@@ -10,6 +10,7 @@ struct GameView: View {
     
     @AppStorage("hapticsEnabled") private var hapticsEnabled = true
     @AppStorage("animationsEnabled") private var animationsEnabled = true
+    @AppStorage("captureHintsEnabled") private var captureHintsEnabled = true
     
     @State private var showingNewGameSheet = false
     @State private var turnBadgeScale: CGFloat = 1.0
@@ -183,7 +184,8 @@ struct GameView: View {
                 BoardView(
                     engine: engine,
                     hapticsEnabled: hapticsEnabled,
-                    animationsEnabled: animationsEnabled
+                    animationsEnabled: animationsEnabled,
+                    showCaptureHints: shouldShowCaptureHints
                 )
                 .aspectRatio(1, contentMode: .fit)
                 .frame(width: side, height: side)
@@ -227,6 +229,17 @@ struct GameView: View {
         if hapticsEnabled {
             turnChangeHaptic.impactOccurred(intensity: 0.55)
         }
+    }
+
+    private var shouldShowCaptureHints: Bool {
+        guard captureHintsEnabled else { return false }
+        guard !engine.state.isGameOver else { return false }
+        guard !engine.isProcessingMove else { return false }
+        // In single-player mode we only hint during human turns.
+        if engine.aiLevel != nil && engine.state.currentPlayer == .o {
+            return false
+        }
+        return true
     }
 }
 

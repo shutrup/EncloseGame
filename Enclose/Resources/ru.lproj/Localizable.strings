@@ -15,6 +15,7 @@
 "menu.feedback" = "Отклик";
 "menu.haptics" = "Вибрация";
 "menu.animations" = "Анимации";
+"menu.capture_hints" = "Подсказки захвата";
 "menu.help" = "Помощь";
 "menu.about" = "О приложении";
 "menu.show_tutorial" = "Обучение";

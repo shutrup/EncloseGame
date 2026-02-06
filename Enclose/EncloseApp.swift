@@ -13,7 +13,8 @@ struct EncloseApp: App {
         UserDefaults.standard.register(defaults: [
             "soundEnabled": true,
             "hapticsEnabled": true,
-            "animationsEnabled": true
+            "animationsEnabled": true,
+            "captureHintsEnabled": true
         ])
     }
 

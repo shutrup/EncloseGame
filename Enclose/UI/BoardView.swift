@@ -5,6 +5,7 @@ struct BoardView: View {
     @ObservedObject var engine: GameEngine
     let hapticsEnabled: Bool
     let animationsEnabled: Bool
+    let showCaptureHints: Bool
     
     @State private var hoveredEdgeId: Int?
     
@@ -25,6 +26,11 @@ struct BoardView: View {
             ZStack {
                 // Layer 1: Grid & Nodes (Static)
                 gridLayer(center: center, scale: metrics.scale, bounds: metrics.bounds)
+
+                // Layer 1.5: Optional hints for near-capturable cells
+                if showCaptureHints {
+                    captureHintsLayer(center: center, scale: metrics.scale, bounds: metrics.bounds)
+                }
                 
                 // Layer 2: Occupied Edges (Center-Out Animation)
                 edgesLayer(center: center, scale: metrics.scale, bounds: metrics.bounds)
@@ -89,6 +95,25 @@ struct BoardView: View {
                     color: isLastMove ? lastMoveColor : AppTheme.activeLine,
                     isAnimated: animationsEnabled,
                     emphasize: isLastMove
+                )
+            }
+        }
+    }
+
+    private func captureHintsLayer(center: CGPoint, scale: CGFloat, bounds: (minX: CGFloat, maxX: CGFloat, minY: CGFloat, maxY: CGFloat)) -> some View {
+        let hintEdges = nearCaptureEdgeIds()
+        let hintColor = engine.state.currentPlayer == .x ? AppTheme.playerX : AppTheme.playerO
+
+        return ForEach(hintEdges, id: \.self) { edgeId in
+            if let edge = engine.board.edges.first(where: { $0.id == edgeId }) {
+                let p1 = project(engine.board.nodes[edge.a].position, center: center, scale: scale, bounds: bounds)
+                let p2 = project(engine.board.nodes[edge.b].position, center: center, scale: scale, bounds: bounds)
+
+                HintEdgeOverlay(
+                    p1: p1,
+                    p2: p2,
+                    color: hintColor,
+                    animate: animationsEnabled
                 )
             }
         }
@@ -237,6 +262,18 @@ struct BoardView: View {
         }
         return captured
     }
+
+    private func nearCaptureEdgeIds() -> [Int] {
+        var hinted: Set<Int> = []
+        for zone in engine.state.zones where zone.owner == .none {
+            let occupiedCount = zone.edgeIds.filter { engine.state.occupiedEdges.contains($0) }.count
+            guard occupiedCount == 3 else { continue }
+            for edgeId in zone.edgeIds where !engine.state.occupiedEdges.contains(edgeId) {
+                hinted.insert(edgeId)
+            }
+        }
+        return hinted.sorted()
+    }
 }
 
 // MARK: - Animated Components
@@ -273,6 +310,36 @@ struct AnimatedEdge: View {
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: emphasize)
+    }
+}
+
+private struct HintEdgeOverlay: View {
+    let p1: CGPoint
+    let p2: CGPoint
+    let color: Color
+    let animate: Bool
+
+    @State private var opacity: CGFloat = 0.35
+
+    var body: some View {
+        EdgeShape(p1: p1, p2: p2)
+            .stroke(
+                color.opacity(opacity),
+                style: StrokeStyle(lineWidth: 2.6, lineCap: .round, dash: [7, 5])
+            )
+            .onAppear {
+                guard animate else {
+                    opacity = 0.45
+                    return
+                }
+                withAnimation(
+                    .easeInOut(duration: 0.9)
+                        .repeatForever(autoreverses: true)
+                ) {
+                    opacity = 0.72
+                }
+            }
+            .allowsHitTesting(false)
     }
 }
 

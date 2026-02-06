@@ -15,6 +15,7 @@
 "menu.feedback" = "Feedback";
 "menu.haptics" = "Haptics";
 "menu.animations" = "Animations";
+"menu.capture_hints" = "Capture Hints";
 "menu.help" = "Help";
 "menu.about" = "About";
 "menu.show_tutorial" = "Show Tutorial";

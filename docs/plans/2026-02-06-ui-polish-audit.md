@@ -14,11 +14,11 @@
 - [x] Added subtle last-move emphasis on the board (player-colored line + glow).
 - [x] Added turn switch micro-feedback (status badge pulse + optional haptic).
 - [x] Added in-match quick access to Rules from game toolbar.
+- [x] Added optional near-capture hints with Settings toggle.
 
 ## Next Priority Improvements
 
 ### P1: Gameplay Readability
-- Add optional "capturable cell" hint for beginners (toggle in Settings).
 - Improve color separation for X/O in low-contrast accessibility contexts.
 
 ### P1: Motion & Feedback
