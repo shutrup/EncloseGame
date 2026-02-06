@@ -6,6 +6,8 @@ struct GameSetupView: View {
     @State private var selectedSize: BoardPreset = .standard
     @State private var navigateToGame = false
     @State private var gameEngine: GameEngine?
+    @State private var launchTransitionProgress: CGFloat = 0
+    @State private var isLaunchingGame = false
     
     enum GameMode: String, CaseIterable, Identifiable {
         case pvp
@@ -83,12 +85,7 @@ struct GameSetupView: View {
                 Spacer(minLength: 0)
                 
                 Button {
-                    let engine = GameEngine(
-                        preset: selectedSize,
-                        aiLevel: selectedMode == .ai ? selectedDifficulty : nil
-                    )
-                    gameEngine = engine
-                    navigateToGame = true
+                    startGameWithTransition()
                 } label: {
                     Text(LocalizedStringKey("menu.play"))
                         .font(.title2.weight(.bold))
@@ -104,11 +101,32 @@ struct GameSetupView: View {
                         )
                         .clipShape(Capsule())
                         .shadow(color: AppTheme.accent.opacity(0.4), radius: 10, y: 5)
+                        .overlay(
+                            Capsule()
+                                .stroke(.white.opacity(0.18), lineWidth: 1)
+                        )
                 }
+                .scaleEffect(1.0 - (launchTransitionProgress * 0.03))
+                .disabled(isLaunchingGame)
             }
             .padding(.horizontal, 24)
             .padding(.top, 16)
             .padding(.bottom, 20)
+            .scaleEffect(1.0 - (launchTransitionProgress * 0.02))
+            .blur(radius: launchTransitionProgress * 1.2)
+
+            LinearGradient(
+                colors: [
+                    AppTheme.accent.opacity(0.05),
+                    Color.clear,
+                    AppTheme.accent.opacity(0.12)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            .opacity(launchTransitionProgress)
+            .allowsHitTesting(false)
         }
         .navigationTitle(String(localized: "game_setup.title"))
         .navigationBarTitleDisplayMode(.inline)
@@ -117,6 +135,10 @@ struct GameSetupView: View {
             if let engine = gameEngine {
                 GameView(engine: engine)
             }
+        }
+        .onAppear {
+            launchTransitionProgress = 0
+            isLaunchingGame = false
         }
     }
 
@@ -197,5 +219,28 @@ struct GameSetupView: View {
         .padding(.vertical, 8)
         .background(AppTheme.background.opacity(0.6))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func startGameWithTransition() {
+        guard !isLaunchingGame else { return }
+        isLaunchingGame = true
+        let engine = GameEngine(
+            preset: selectedSize,
+            aiLevel: selectedMode == .ai ? selectedDifficulty : nil
+        )
+        gameEngine = engine
+        
+        withAnimation(.easeInOut(duration: 0.18)) {
+            launchTransitionProgress = 1
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            navigateToGame = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+            launchTransitionProgress = 0
+            isLaunchingGame = false
+        }
     }
 }

@@ -307,15 +307,25 @@ private struct GameOverModal: View {
             Color.black.opacity(0.3)
                 .ignoresSafeArea()
                 .transition(.opacity)
+
+            if winnerPlayer != nil {
+                Circle()
+                    .fill(winnerAccentColor.opacity(0.14))
+                    .frame(width: 250, height: 250)
+                    .blur(radius: 24)
+                    .offset(y: -120)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
             
             VStack(spacing: 20) {
                 Spacer().frame(height: 8)
                 
                 VStack(spacing: 8) {
-                    Image(systemName: "trophy.fill")
+                    Image(systemName: winnerPlayer == nil ? "equal.circle.fill" : "trophy.fill")
                         .font(.system(size: 40))
-                        .foregroundStyle(Color.yellow)
-                        .shadow(color: .orange.opacity(0.5), radius: 10)
+                        .foregroundStyle(winnerPlayer == nil ? Color.secondary : winnerAccentColor)
+                        .shadow(color: winnerAccentColor.opacity(0.45), radius: 10)
                     
                     Text(LocalizedStringKey(winnerTitleKey))
                         .font(.title2.weight(.bold))
@@ -342,6 +352,16 @@ private struct GameOverModal: View {
                         Text(oLabel).foregroundStyle(AppTheme.playerO)
                     }
                     .font(.caption.weight(.bold))
+                    
+                    if winnerPlayer != nil {
+                        Text("\(String(localized: "gameover.advantage")): \(scoreMargin)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(winnerAccentColor)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(winnerAccentColor.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
                 }
                 
                 Spacer().frame(height: 8)
@@ -369,8 +389,23 @@ private struct GameOverModal: View {
                 .padding(.horizontal, 8)
             }
             .padding(24)
-            .background(.regularMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(.regularMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        winnerAccentColor.opacity(0.16),
+                                        Color.clear
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    )
+            )
             .shadow(color: Color.black.opacity(0.15), radius: 30, x: 0, y: 15)
             .padding(.horizontal, 40)
             .scaleEffect(animateIn ? 1.0 : 0.9)
@@ -388,6 +423,23 @@ private struct GameOverModal: View {
             return "winner.draw"
         }
         return engine.state.scoreX > engine.state.scoreO ? "winner.x" : "winner.o"
+    }
+
+    private var winnerPlayer: Player? {
+        if engine.state.scoreX == engine.state.scoreO { return nil }
+        return engine.state.scoreX > engine.state.scoreO ? .x : .o
+    }
+
+    private var scoreMargin: Int {
+        abs(engine.state.scoreX - engine.state.scoreO)
+    }
+
+    private var winnerAccentColor: Color {
+        switch winnerPlayer {
+        case .x: return AppTheme.playerX
+        case .o: return AppTheme.playerO
+        case .none: return .yellow
+        }
     }
 }
 

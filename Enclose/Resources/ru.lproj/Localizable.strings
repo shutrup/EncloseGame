@@ -77,5 +77,6 @@
 "settings.author" = "Вы";
 "cancel" = "Отмена";
 "common.vs" = "против";
+"gameover.advantage" = "Преимущество";
 "game.stat.edges" = "Линии";
 "game.stat.zones" = "Клетки";

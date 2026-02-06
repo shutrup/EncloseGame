@@ -77,5 +77,6 @@
 "settings.author" = "You";
 "cancel" = "Cancel";
 "common.vs" = "vs";
+"gameover.advantage" = "Advantage";
 "game.stat.edges" = "Edges";
 "game.stat.zones" = "Zones";
