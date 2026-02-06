@@ -8,6 +8,7 @@ struct GameSetupView: View {
     @State private var gameEngine: GameEngine?
     @State private var launchTransitionProgress: CGFloat = 0
     @State private var isLaunchingGame = false
+    @State private var setupContentAnimToken = 0
     
     enum GameMode: String, CaseIterable, Identifiable {
         case pvp
@@ -77,7 +78,7 @@ struct GameSetupView: View {
                         }
                         .pickerStyle(.segmented)
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .transition(.opacity)
                 }
                 
                 setupSummaryCard
@@ -114,6 +115,7 @@ struct GameSetupView: View {
             .padding(.bottom, 20)
             .scaleEffect(1.0 - (launchTransitionProgress * 0.02))
             .blur(radius: launchTransitionProgress * 1.2)
+            .animation(.easeInOut(duration: 0.2), value: setupContentAnimToken)
 
             LinearGradient(
                 colors: [
@@ -130,7 +132,6 @@ struct GameSetupView: View {
         }
         .navigationTitle(String(localized: "game_setup.title"))
         .navigationBarTitleDisplayMode(.inline)
-        .animation(.easeInOut(duration: 0.25), value: selectedMode)
         .navigationDestination(isPresented: $navigateToGame) {
             if let engine = gameEngine {
                 GameView(engine: engine)
@@ -139,6 +140,9 @@ struct GameSetupView: View {
         .onAppear {
             launchTransitionProgress = 0
             isLaunchingGame = false
+        }
+        .onChange(of: selectedMode) {
+            setupContentAnimToken += 1
         }
     }
 
