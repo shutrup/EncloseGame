@@ -8,7 +8,6 @@ struct GameSetupView: View {
     @State private var gameEngine: GameEngine?
     @State private var launchTransitionProgress: CGFloat = 0
     @State private var isLaunchingGame = false
-    @State private var setupContentAnimToken = 0
     
     enum GameMode: String, CaseIterable, Identifiable {
         case pvp
@@ -55,7 +54,7 @@ struct GameSetupView: View {
                 }
                 
                 sectionCard(title: LocalizedStringKey("menu.mode"), icon: "person.2.fill") {
-                    Picker(String(localized: "menu.mode"), selection: $selectedMode) {
+                    Picker(String(localized: "menu.mode"), selection: modeBinding) {
                         ForEach(GameMode.allCases) { mode in
                             Text(mode.segmentTitle)
                                 .lineLimit(1)
@@ -115,7 +114,6 @@ struct GameSetupView: View {
             .padding(.bottom, 20)
             .scaleEffect(1.0 - (launchTransitionProgress * 0.02))
             .blur(radius: launchTransitionProgress * 1.2)
-            .animation(.easeInOut(duration: 0.2), value: setupContentAnimToken)
 
             LinearGradient(
                 colors: [
@@ -140,9 +138,6 @@ struct GameSetupView: View {
         .onAppear {
             launchTransitionProgress = 0
             isLaunchingGame = false
-        }
-        .onChange(of: selectedMode) {
-            setupContentAnimToken += 1
         }
     }
 
@@ -246,5 +241,16 @@ struct GameSetupView: View {
             launchTransitionProgress = 0
             isLaunchingGame = false
         }
+    }
+
+    private var modeBinding: Binding<GameMode> {
+        Binding(
+            get: { selectedMode },
+            set: { newValue in
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    selectedMode = newValue
+                }
+            }
+        )
     }
 }
