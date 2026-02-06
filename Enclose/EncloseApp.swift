@@ -9,9 +9,18 @@ import SwiftUI
 
 @main
 struct EncloseApp: App {
-  var body: some Scene {
-    WindowGroup {
-      SplashScreenView()
+    init() {
+        UserDefaults.standard.register(defaults: [
+            "soundEnabled": true,
+            "hapticsEnabled": true,
+            "animationsEnabled": true,
+            "boardPreset": BoardPreset.standard.rawValue
+        ])
     }
-  }
+
+    var body: some Scene {
+        WindowGroup {
+            SplashScreenView()
+        }
+    }
 }

@@ -7,8 +7,6 @@ struct BoardView: View {
     let animationsEnabled: Bool
     
     @State private var hoveredEdgeId: Int?
-    @State private var lastPlayedEdgeId: Int?
-    @State private var lastCapturedZoneIds: Set<Int> = []
     
     @State private var particleTrigger: CGPoint?
     @State private var particleColor: Color = .blue
@@ -21,7 +19,6 @@ struct BoardView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let size = min(proxy.size.width, proxy.size.height)
             let center = CGPoint(x: proxy.size.width / 2, y: proxy.size.height / 2)
             let metrics = BoardMetrics(proxy: proxy, engine: engine)
 

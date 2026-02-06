@@ -7,6 +7,7 @@
 "winner.x" = "X Wins";
 "winner.o" = "O Wins";
 "menu.settings" = "Settings";
+"menu.rules" = "Rules";
 "menu.board.size" = "Size";
 "menu.board.mini" = "Mini (13)";
 "menu.board.standard" = "Standard (25)";
@@ -38,9 +39,12 @@
 /* Phase 2/4 UI */
 "menu.play" = "Play";
 "menu.pvp" = "PvP (Local)";
+"menu.pvp.short" = "PvP";
 "menu.single_player" = "Single Player";
 "difficulty.easy" = "Easy";
 "difficulty.medium" = "Medium";
+"difficulty.hard" = "Hard";
+"menu.difficulty" = "Difficulty";
 
 /* Interactive Tutorial */
 "tutorial.step.welcome" = "Welcome to Enclose! Let's learn to play.";
@@ -61,3 +65,10 @@
 "menu.sound" = "Sound";
 
 "turn.ai" = "AI Thinking...";
+"menu.mode" = "Mode";
+"game_setup.title" = "Game Setup";
+"settings.version" = "Version";
+"settings.designed_by" = "Designed by";
+"settings.author" = "You";
+"cancel" = "Cancel";
+"common.vs" = "vs";

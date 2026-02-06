@@ -2,46 +2,44 @@ import SwiftUI
 
 struct RulesView: View {
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    RuleItem(
-                        number: "1",
-                        title: String(localized: "rules.title1"),
-                        description: String(localized: "rules.desc1"),
-                        icon: "pencil.line",
-                        color: Color.blue
-                    )
-                    
-                    RuleItem(
-                        number: "2",
-                        title: String(localized: "rules.title2"),
-                        description: String(localized: "rules.desc2"),
-                        icon: "square.dashed",
-                        color: Color.purple
-                    )
-                    
-                    RuleItem(
-                        number: "3",
-                        title: String(localized: "rules.title3"),
-                        description: String(localized: "rules.desc3"),
-                        icon: "arrow.triangle.2.circlepath",
-                        color: Color.green
-                    )
-                    
-                    RuleItem(
-                        number: "4",
-                        title: String(localized: "rules.title4"),
-                        description: String(localized: "rules.desc4"),
-                        icon: "trophy.fill",
-                        color: Color.orange
-                    )
-                }
-                .padding()
+        ScrollView {
+            VStack(spacing: 24) {
+                RuleItem(
+                    number: "1",
+                    title: String(localized: "rules.title1"),
+                    description: String(localized: "rules.desc1"),
+                    icon: "pencil.line",
+                    color: Color.blue
+                )
+                
+                RuleItem(
+                    number: "2",
+                    title: String(localized: "rules.title2"),
+                    description: String(localized: "rules.desc2"),
+                    icon: "square.dashed",
+                    color: Color.purple
+                )
+                
+                RuleItem(
+                    number: "3",
+                    title: String(localized: "rules.title3"),
+                    description: String(localized: "rules.desc3"),
+                    icon: "arrow.triangle.2.circlepath",
+                    color: Color.green
+                )
+                
+                RuleItem(
+                    number: "4",
+                    title: String(localized: "rules.title4"),
+                    description: String(localized: "rules.desc4"),
+                    icon: "trophy.fill",
+                    color: Color.orange
+                )
             }
-            .background(Color(UIColor.systemGroupedBackground))
-            .navigationTitle(String(localized: "menu.help"))
+            .padding()
         }
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle(String(localized: "menu.rules"))
     }
 }
 

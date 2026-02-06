@@ -36,8 +36,8 @@ class SoundManager {
     }
     
     func play(_ sound: Sound) {
-        // Check UserDefaults directly
-        if UserDefaults.standard.bool(forKey: "soundEnabled") == false {
+        let soundEnabled = (UserDefaults.standard.object(forKey: "soundEnabled") as? Bool) ?? true
+        if !soundEnabled {
             return
         }
         

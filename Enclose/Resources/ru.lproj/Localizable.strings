@@ -7,6 +7,7 @@
 "winner.x" = "Победа X";
 "winner.o" = "Победа O";
 "menu.settings" = "Настройки";
+"menu.rules" = "Правила";
 "menu.board.size" = "Размер";
 "menu.board.mini" = "Мини (13)";
 "menu.board.standard" = "Стандарт (25)";
@@ -38,9 +39,12 @@
 /* Phase 2/4 UI */
 "menu.play" = "Играть";
 "menu.pvp" = "PvP (На одном устройстве)";
+"menu.pvp.short" = "PvP";
 "menu.single_player" = "Одиночная игра";
 "difficulty.easy" = "Легкий";
 "difficulty.medium" = "Средний";
+"difficulty.hard" = "Сложный";
+"menu.difficulty" = "Сложность";
 
 /* Interactive Tutorial */
 "tutorial.step.welcome" = "Добро пожаловать в Enclose! Давай научимся играть.";
@@ -61,3 +65,10 @@
 "menu.sound" = "Звук";
 
 "turn.ai" = "ИИ думает...";
+"menu.mode" = "Режим";
+"game_setup.title" = "Настройка игры";
+"settings.version" = "Версия";
+"settings.designed_by" = "Автор";
+"settings.author" = "Вы";
+"cancel" = "Отмена";
+"common.vs" = "против";

@@ -1,10 +1,15 @@
 import SwiftUI
 
 struct GameView: View {
-    @StateObject private var engine = GameEngine()
+    @StateObject var engine: GameEngine
+    
+    init(engine: GameEngine = GameEngine()) {
+        _engine = StateObject(wrappedValue: engine)
+    }
     
     @AppStorage("hapticsEnabled") private var hapticsEnabled = true
     @AppStorage("animationsEnabled") private var animationsEnabled = true
+    // We observe this for binding changes, but we don't auto-reset on appear anymore
     @AppStorage("boardPreset") private var boardPresetRaw = BoardPreset.standard.rawValue
     
     @State private var showingNewGameSheet = false
@@ -13,102 +18,124 @@ struct GameView: View {
         get { BoardPreset(rawValue: boardPresetRaw) ?? .standard }
         set { boardPresetRaw = newValue.rawValue }
     }
-
+    
     var body: some View {
-        NavigationStack {
-            ZStack {
-                AppTheme.background.ignoresSafeArea()
-
-                VStack(spacing: 18) {
-                    HStack {
-                        ScorePill(
-                            label: NSLocalizedString("score.x", comment: "X"),
-                            score: engine.state.scoreX,
-                            color: AppTheme.playerX,
-                            isActive: engine.state.currentPlayer == .x
-                        )
-                        Spacer()
-                        
-                        // Turn Indicator / Thinking status
-                        HStack(spacing: 6) {
-                            if engine.isProcessingMove {
-                                ProgressView()
-                                    .controlSize(.mini)
-                                    .tint(AppTheme.textPrimary)
-                                Text(LocalizedStringKey("turn.ai"))
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppTheme.textSecondary)
-                            } else {
-                                if let _ = engine.aiLevel, engine.state.currentPlayer == .o {
-                                    Image(systemName: "brain.head.profile")
-                                        .font(.caption)
-                                        .foregroundStyle(AppTheme.textSecondary)
-                                }
-                                Text(LocalizedStringKey(engine.state.currentPlayer == .x ? "turn.x" : "turn.o"))
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(AppTheme.textPrimary)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(AppTheme.surface)
-                        .clipShape(Capsule())
-                        
-                        Spacer()
-                        ScorePill(
-                            label: NSLocalizedString("score.o", comment: "O"),
-                            score: engine.state.scoreO,
-                            color: AppTheme.playerO,
-                            isActive: engine.state.currentPlayer == .o
-                        )
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-
-                    BoardView(
-                        engine: engine,
-                        hapticsEnabled: hapticsEnabled,
-                        animationsEnabled: animationsEnabled
+        ZStack {
+            AppTheme.background.ignoresSafeArea()
+            
+            VStack(spacing: 18) {
+                HStack {
+                    ScorePill(
+                        label: NSLocalizedString("score.x", comment: "X"),
+                        score: engine.state.scoreX,
+                        color: AppTheme.playerX,
+                        isActive: engine.state.currentPlayer == .x
                     )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    Spacer()
+                    
+                    HStack(spacing: 6) {
+                        if engine.isProcessingMove {
+                            ProgressView()
+                                .controlSize(.mini)
+                                .tint(AppTheme.textPrimary)
+                            Text(LocalizedStringKey("turn.ai"))
+                                .font(.subheadline)
+                                .foregroundStyle(AppTheme.textSecondary)
+                        } else {
+                            if engine.aiLevel != nil, engine.state.currentPlayer == .o {
+                                Image(systemName: "brain.head.profile")
+                                    .font(.caption)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            }
+                            Text(LocalizedStringKey(engine.state.currentPlayer == .x ? "turn.x" : "turn.o"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(AppTheme.textPrimary)
+                        }
+                    }
                     .padding(.horizontal, 12)
-                    .opacity(engine.isProcessingMove ? 0.7 : 1.0) // Dim slightly when AI thinks
-                    .animation(.easeInOut(duration: 0.2), value: engine.isProcessingMove)
+                    .padding(.vertical, 6)
+                    .background(AppTheme.surface)
+                    .clipShape(Capsule())
+                    
+                    Spacer()
+                    ScorePill(
+                        label: NSLocalizedString("score.o", comment: "O"),
+                        score: engine.state.scoreO,
+                        color: AppTheme.playerO,
+                        isActive: engine.state.currentPlayer == .o
+                    )
                 }
-                .padding(.top, 12)
-            }
-            .navigationTitle("Enclose")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingNewGameSheet = true
-                    } label: {
-                        Text("new_game")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.accent)
-                    }
-                    .disabled(engine.isProcessingMove) // Block new game while thinking
-                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
                 
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        engine.reset()
-                    } label: {
-                        Text("menu.refresh")
-                            .font(.body)
-                            .foregroundStyle(AppTheme.textSecondary)
-                    }
-                    .disabled(engine.isProcessingMove)
-                }
+                Spacer()
+                
+                BoardView(
+                    engine: engine,
+                    hapticsEnabled: hapticsEnabled,
+                    animationsEnabled: animationsEnabled
+                )
+                .aspectRatio(1, contentMode: .fit)
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    AppTheme.surface.opacity(0.92),
+                                    AppTheme.background.opacity(0.88)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.primary.opacity(0.14), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.22), radius: 14, y: 8)
+                .padding(.horizontal, 16)
+                .opacity(engine.isProcessingMove ? 0.7 : 1.0)
+                .animation(.easeInOut(duration: 0.2), value: engine.isProcessingMove)
+                
+                Spacer()
             }
-            .sheet(isPresented: $showingNewGameSheet) {
-                NewGameSheet(engine: engine, isPresented: $showingNewGameSheet)
-                    .presentationDetents([.medium])
+            .padding(.top, 12)
+        }
+        .navigationTitle("Enclose")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showingNewGameSheet = true
+                } label: {
+                    Text(LocalizedStringKey("new_game"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AppTheme.accent)
+                }
+                .disabled(engine.isProcessingMove)
+            }
+            
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    engine.reset()
+                } label: {
+                    Text(LocalizedStringKey("menu.refresh"))
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                .disabled(engine.isProcessingMove)
             }
         }
+        .sheet(isPresented: $showingNewGameSheet) {
+            NewGameSheet(engine: engine, isPresented: $showingNewGameSheet)
+                .presentationDetents([.medium])
+        }
         .onChange(of: boardPresetRaw) {
-             engine.reset(preset: boardPreset)
+            if engine.preset != boardPreset {
+                engine.reset(preset: boardPreset)
+            }
         }
         .onChange(of: engine.state.currentPlayer) {
             handleAITurn(player: engine.state.currentPlayer)
@@ -125,15 +152,8 @@ struct GameView: View {
         // But we still need to Trigger the flow if not already triggered.
         // GameEngine.makeAIMove() handles the rest.
         if player == .o && engine.aiLevel != nil && !engine.state.isGameOver {
-             engine.makeAIMove()
+            engine.makeAIMove()
         }
-    }
-    
-    private var winnerTitleKey: String {
-        if engine.state.scoreX == engine.state.scoreO {
-            return "winner.draw"
-        }
-        return engine.state.scoreX > engine.state.scoreO ? "winner.x" : "winner.o"
     }
 }
 
@@ -170,13 +190,21 @@ struct NewGameSheet: View {
                     } label: {
                         Label(String(localized: "difficulty.medium"), systemImage: "hare")
                     }
+                    
+                    Button {
+                        engine.setAI(.hard)
+                        engine.reset()
+                        isPresented = false
+                    } label: {
+                        Label(String(localized: "difficulty.hard"), systemImage: "flag")
+                    }
                 }
             }
-            .navigationTitle("new_game")
+            .navigationTitle(String(localized: "new_game"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { isPresented = false }
+                    Button(String(localized: "cancel")) { isPresented = false }
                 }
             }
         }
@@ -192,7 +220,7 @@ private struct GameOverModal: View {
             Color.black.opacity(0.3)
                 .ignoresSafeArea()
                 .transition(.opacity)
-
+            
             VStack(spacing: 20) {
                 Spacer().frame(height: 8)
                 
@@ -207,10 +235,10 @@ private struct GameOverModal: View {
                         .multilineTextAlignment(.center)
                         .foregroundStyle(Color.primary)
                 }
-
+                
                 Divider()
                     .background(Color.primary.opacity(0.1))
-
+                
                 VStack(spacing: 4) {
                     let xLabel = NSLocalizedString("score.x", comment: "X")
                     let oLabel = NSLocalizedString("score.o", comment: "O")
@@ -221,16 +249,16 @@ private struct GameOverModal: View {
                     
                     HStack(spacing: 4) {
                         Text(xLabel).foregroundStyle(AppTheme.playerX)
-                        Text("vs")
+                        Text(LocalizedStringKey("common.vs"))
                             .font(.caption)
                             .foregroundStyle(Color.secondary)
                         Text(oLabel).foregroundStyle(AppTheme.playerO)
                     }
                     .font(.caption.weight(.bold))
                 }
-
+                
                 Spacer().frame(height: 8)
-
+                
                 Button {
                     withAnimation {
                         engine.reset()
@@ -281,14 +309,14 @@ private struct ScorePill: View {
     let score: Int
     let color: Color
     let isActive: Bool
-
+    
     init(label: String, score: Int, color: Color, isActive: Bool = false) {
         self.label = label
         self.score = score
         self.color = color
         self.isActive = isActive
     }
-
+    
     var body: some View {
         HStack(spacing: 8) {
             Circle()
@@ -301,7 +329,7 @@ private struct ScorePill: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(AppTheme.surface) 
+        .background(AppTheme.surface)
         .overlay(
             Capsule()
                 .stroke(isActive ? color.opacity(0.5) : Color.primary.opacity(0.05), lineWidth: 1)
