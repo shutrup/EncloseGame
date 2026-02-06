@@ -25,6 +25,13 @@ struct GameSetupView: View {
             case .ai: return NSLocalizedString("menu.single_player", comment: "AI")
             }
         }
+
+        var summaryTitle: String {
+            switch self {
+            case .pvp: return NSLocalizedString("menu.pvp.short", comment: "PvP")
+            case .ai: return NSLocalizedString("menu.single_player.short", comment: "Single")
+            }
+        }
     }
     
     var body: some View {
@@ -119,9 +126,9 @@ struct GameSetupView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(AppTheme.textSecondary)
             
-            HStack(spacing: 8) {
+            LazyVGrid(columns: summaryColumns, spacing: 8) {
                 summaryTag(title: String(localized: "menu.board.size"), value: selectedSize.localizedName)
-                summaryTag(title: String(localized: "menu.mode"), value: selectedMode.segmentTitle)
+                summaryTag(title: String(localized: "menu.mode"), value: selectedMode.summaryTitle)
                 if selectedMode == .ai {
                     summaryTag(title: String(localized: "menu.difficulty"), value: selectedDifficulty.localizedName)
                 }
@@ -137,6 +144,10 @@ struct GameSetupView: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         )
+    }
+
+    private var summaryColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 130), spacing: 8, alignment: .leading)]
     }
 
     private func sectionCard<Content: View>(
@@ -174,10 +185,12 @@ struct GameSetupView: View {
                 .font(.caption2)
                 .foregroundStyle(AppTheme.textSecondary)
             Text(value)
-                .font(.caption.weight(.semibold))
+                .font(.caption2.weight(.semibold))
                 .foregroundStyle(AppTheme.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .allowsTightening(true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 10)

@@ -41,6 +41,7 @@
 "menu.pvp" = "PvP (Local)";
 "menu.pvp.short" = "PvP";
 "menu.single_player" = "Single Player";
+"menu.single_player.short" = "Solo";
 "difficulty.easy" = "Easy";
 "difficulty.medium" = "Medium";
 "difficulty.hard" = "Hard";

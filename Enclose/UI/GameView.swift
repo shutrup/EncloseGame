@@ -9,15 +9,8 @@ struct GameView: View {
     
     @AppStorage("hapticsEnabled") private var hapticsEnabled = true
     @AppStorage("animationsEnabled") private var animationsEnabled = true
-    // We observe this for binding changes, but we don't auto-reset on appear anymore
-    @AppStorage("boardPreset") private var boardPresetRaw = BoardPreset.standard.rawValue
     
     @State private var showingNewGameSheet = false
-    
-    private var boardPreset: BoardPreset {
-        get { BoardPreset(rawValue: boardPresetRaw) ?? .standard }
-        set { boardPresetRaw = newValue.rawValue }
-    }
     
     var body: some View {
         GeometryReader { proxy in
@@ -102,11 +95,6 @@ struct GameView: View {
         .sheet(isPresented: $showingNewGameSheet) {
             NewGameSheet(engine: engine, isPresented: $showingNewGameSheet)
                 .presentationDetents([.medium])
-        }
-        .onChange(of: boardPresetRaw) {
-            if engine.preset != boardPreset {
-                engine.reset(preset: boardPreset)
-            }
         }
         .onChange(of: engine.state.currentPlayer) {
             handleAITurn(player: engine.state.currentPlayer)

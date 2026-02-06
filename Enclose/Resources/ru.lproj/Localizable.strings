@@ -41,6 +41,7 @@
 "menu.pvp" = "PvP (На одном устройстве)";
 "menu.pvp.short" = "PvP";
 "menu.single_player" = "Одиночная игра";
+"menu.single_player.short" = "Одиночная";
 "difficulty.easy" = "Легкий";
 "difficulty.medium" = "Средний";
 "difficulty.hard" = "Сложный";
