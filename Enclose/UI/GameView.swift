@@ -20,88 +20,59 @@ struct GameView: View {
     }
     
     var body: some View {
-        ZStack {
-            AppTheme.background.ignoresSafeArea()
-            
-            VStack(spacing: 18) {
-                HStack {
-                    ScorePill(
-                        label: NSLocalizedString("score.x", comment: "X"),
-                        score: engine.state.scoreX,
-                        color: AppTheme.playerX,
-                        isActive: engine.state.currentPlayer == .x
-                    )
-                    Spacer()
-                    
-                    HStack(spacing: 6) {
-                        if engine.isProcessingMove {
-                            ProgressView()
-                                .controlSize(.mini)
-                                .tint(AppTheme.textPrimary)
-                            Text(LocalizedStringKey("turn.ai"))
-                                .font(.subheadline)
-                                .foregroundStyle(AppTheme.textSecondary)
-                        } else {
-                            if engine.aiLevel != nil, engine.state.currentPlayer == .o {
-                                Image(systemName: "brain.head.profile")
-                                    .font(.caption)
-                                    .foregroundStyle(AppTheme.textSecondary)
-                            }
-                            Text(LocalizedStringKey(engine.state.currentPlayer == .x ? "turn.x" : "turn.o"))
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(AppTheme.textPrimary)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(AppTheme.surface)
-                    .clipShape(Capsule())
-                    
-                    Spacer()
-                    ScorePill(
-                        label: NSLocalizedString("score.o", comment: "O"),
-                        score: engine.state.scoreO,
-                        color: AppTheme.playerO,
-                        isActive: engine.state.currentPlayer == .o
-                    )
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+        GeometryReader { proxy in
+            let availableHeight = proxy.size.height
+            let boardStageHeight = min(max(availableHeight * 0.58, 280), 520)
+
+            ZStack {
+                AppTheme.background.ignoresSafeArea()
                 
-                Spacer()
-                
-                BoardView(
-                    engine: engine,
-                    hapticsEnabled: hapticsEnabled,
-                    animationsEnabled: animationsEnabled
-                )
-                .aspectRatio(1, contentMode: .fit)
-                .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    AppTheme.surface.opacity(0.92),
-                                    AppTheme.background.opacity(0.88)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+                VStack(spacing: 14) {
+                    HStack {
+                        ScorePill(
+                            label: NSLocalizedString("score.x", comment: "X"),
+                            score: engine.state.scoreX,
+                            color: AppTheme.playerX,
+                            isActive: engine.state.currentPlayer == .x
                         )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(Color.primary.opacity(0.14), lineWidth: 1)
-                )
-                .shadow(color: Color.black.opacity(0.22), radius: 14, y: 8)
+                        Spacer()
+                        ScorePill(
+                            label: NSLocalizedString("score.o", comment: "O"),
+                            score: engine.state.scoreO,
+                            color: AppTheme.playerO,
+                            isActive: engine.state.currentPlayer == .o
+                        )
+                    }
+                    
+                    turnStatusPill
+                    
+                    boardStage(height: boardStageHeight)
+                    
+                    HStack(spacing: 10) {
+                        StatPill(
+                            icon: "line.3.horizontal",
+                            title: String(localized: "game.stat.edges"),
+                            value: "\(engine.state.occupiedEdges.count)/\(engine.board.edges.count)"
+                        )
+                        StatPill(
+                            icon: "square.grid.3x3.fill",
+                            title: String(localized: "game.stat.zones"),
+                            value: "\(engine.state.scoreX + engine.state.scoreO)/\(engine.state.zones.count)"
+                        )
+                        StatPill(
+                            icon: engine.aiLevel == nil ? "person.2.fill" : "brain.head.profile",
+                            title: String(localized: "menu.mode"),
+                            value: engine.aiLevel == nil ? String(localized: "menu.pvp.short") : String(localized: "menu.single_player")
+                        )
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    Spacer(minLength: 0)
+                }
                 .padding(.horizontal, 16)
-                .opacity(engine.isProcessingMove ? 0.7 : 1.0)
-                .animation(.easeInOut(duration: 0.2), value: engine.isProcessingMove)
-                
-                Spacer()
+                .padding(.top, 8)
+                .padding(.bottom, 10)
             }
-            .padding(.top, 12)
         }
         .navigationTitle("Enclose")
         .navigationBarTitleDisplayMode(.inline)
@@ -145,6 +116,80 @@ struct GameView: View {
                 GameOverModal(engine: engine)
             }
         }
+    }
+
+    @ViewBuilder
+    private var turnStatusPill: some View {
+        HStack(spacing: 8) {
+            if engine.isProcessingMove {
+                ProgressView()
+                    .controlSize(.mini)
+                    .tint(AppTheme.textPrimary)
+                Text(LocalizedStringKey("turn.ai"))
+                    .font(.subheadline)
+                    .foregroundStyle(AppTheme.textSecondary)
+            } else {
+                if engine.aiLevel != nil, engine.state.currentPlayer == .o {
+                    Image(systemName: "brain.head.profile")
+                        .font(.caption)
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                Text(LocalizedStringKey(engine.state.currentPlayer == .x ? "turn.x" : "turn.o"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .background(AppTheme.surface.opacity(0.9))
+        .overlay(
+            Capsule()
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .clipShape(Capsule())
+    }
+
+    private func boardStage(height: CGFloat) -> some View {
+        GeometryReader { stageProxy in
+            let side = min(stageProxy.size.width - 26, stageProxy.size.height - 20)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                AppTheme.surface.opacity(0.95),
+                                AppTheme.background.opacity(0.9)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                Circle()
+                    .fill(AppTheme.accent.opacity(0.18))
+                    .blur(radius: 70)
+                    .frame(width: side * 0.9, height: side * 0.9)
+
+                BoardView(
+                    engine: engine,
+                    hapticsEnabled: hapticsEnabled,
+                    animationsEnabled: animationsEnabled
+                )
+                .aspectRatio(1, contentMode: .fit)
+                .frame(width: side, height: side)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(Color.primary.opacity(0.14), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.22), radius: 14, y: 8)
+            .opacity(engine.isProcessingMove ? 0.7 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: engine.isProcessingMove)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .frame(height: height)
     }
     
     private func handleAITurn(player: Player) {
@@ -337,5 +382,38 @@ private struct ScorePill: View {
         .clipShape(Capsule())
         .scaleEffect(isActive ? 1.05 : 1.0)
         .animation(.spring(response: 0.3), value: isActive)
+    }
+}
+
+private struct StatPill: View {
+    let icon: String
+    let title: String
+    let value: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.caption2)
+                Text(title)
+                    .font(.caption2)
+            }
+            .foregroundStyle(AppTheme.textSecondary)
+            
+            Text(value)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppTheme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(AppTheme.surface.opacity(0.86))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.primary.opacity(0.07), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }

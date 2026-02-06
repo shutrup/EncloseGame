@@ -67,8 +67,11 @@
 "turn.ai" = "AI Thinking...";
 "menu.mode" = "Mode";
 "game_setup.title" = "Game Setup";
+"game_setup.summary" = "Selected options";
 "settings.version" = "Version";
 "settings.designed_by" = "Designed by";
 "settings.author" = "You";
 "cancel" = "Cancel";
 "common.vs" = "vs";
+"game.stat.edges" = "Edges";
+"game.stat.zones" = "Zones";

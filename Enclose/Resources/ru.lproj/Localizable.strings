@@ -67,8 +67,11 @@
 "turn.ai" = "ИИ думает...";
 "menu.mode" = "Режим";
 "game_setup.title" = "Настройка игры";
+"game_setup.summary" = "Выбранные параметры";
 "settings.version" = "Версия";
 "settings.designed_by" = "Автор";
 "settings.author" = "Вы";
 "cancel" = "Отмена";
 "common.vs" = "против";
+"game.stat.edges" = "Линии";
+"game.stat.zones" = "Клетки";

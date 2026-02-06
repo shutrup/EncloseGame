@@ -31,13 +31,8 @@ struct GameSetupView: View {
         ZStack {
             AppTheme.background.ignoresSafeArea()
             
-            VStack(spacing: 24) {
-                // Size Selection
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(LocalizedStringKey("menu.board.size"))
-                        .font(.headline)
-                        .foregroundStyle(AppTheme.textSecondary)
-                    
+            VStack(spacing: 16) {
+                sectionCard(title: LocalizedStringKey("menu.board.size"), icon: "square.grid.3x3.fill") {
                     Picker(String(localized: "menu.board.size"), selection: $selectedSize) {
                         ForEach(BoardPreset.allCases) { preset in
                             Text(preset.localizedName)
@@ -49,12 +44,7 @@ struct GameSetupView: View {
                     .pickerStyle(.segmented)
                 }
                 
-                // Mode Selection
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(String(localized: "menu.mode"))
-                        .font(.headline)
-                        .foregroundStyle(AppTheme.textSecondary)
-                    
+                sectionCard(title: LocalizedStringKey("menu.mode"), icon: "person.2.fill") {
                     Picker(String(localized: "menu.mode"), selection: $selectedMode) {
                         ForEach(GameMode.allCases) { mode in
                             Text(mode.segmentTitle)
@@ -66,13 +56,8 @@ struct GameSetupView: View {
                     .pickerStyle(.segmented)
                 }
                 
-                // Difficulty (only for AI mode)
                 if selectedMode == .ai {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(LocalizedStringKey("menu.difficulty"))
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.textSecondary)
-                        
+                    sectionCard(title: LocalizedStringKey("menu.difficulty"), icon: "brain.head.profile") {
                         Picker(String(localized: "menu.difficulty"), selection: $selectedDifficulty) {
                             ForEach(AILevel.allCases) { level in
                                 Text(level.localizedName)
@@ -86,9 +71,10 @@ struct GameSetupView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
                 
-                Spacer()
+                setupSummaryCard
                 
-                // Start Button
+                Spacer(minLength: 0)
+                
                 Button {
                     let engine = GameEngine(
                         preset: selectedSize,
@@ -114,7 +100,8 @@ struct GameSetupView: View {
                 }
             }
             .padding(.horizontal, 24)
-            .padding(.vertical, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 20)
         }
         .navigationTitle(String(localized: "game_setup.title"))
         .navigationBarTitleDisplayMode(.inline)
@@ -124,5 +111,78 @@ struct GameSetupView: View {
                 GameView(engine: engine)
             }
         }
+    }
+
+    private var setupSummaryCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(LocalizedStringKey("game_setup.summary"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppTheme.textSecondary)
+            
+            HStack(spacing: 8) {
+                summaryTag(title: String(localized: "menu.board.size"), value: selectedSize.localizedName)
+                summaryTag(title: String(localized: "menu.mode"), value: selectedMode.segmentTitle)
+                if selectedMode == .ai {
+                    summaryTag(title: String(localized: "menu.difficulty"), value: selectedDifficulty.localizedName)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(AppTheme.surface.opacity(0.75))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+    }
+
+    private func sectionCard<Content: View>(
+        title: LocalizedStringKey,
+        icon: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label {
+                Text(title)
+                    .font(.headline)
+            } icon: {
+                Image(systemName: icon)
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(AppTheme.textSecondary)
+            
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(AppTheme.surface.opacity(0.85))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+    }
+
+    private func summaryTag(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(AppTheme.textSecondary)
+            Text(value)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppTheme.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(AppTheme.background.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
