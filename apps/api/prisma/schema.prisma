@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(cuid())
+  telegramId String    @unique
+  username   String?
+  firstName  String?
+  lastName   String?
+  createdAt  DateTime  @default(now())
+  sessions   Session[]
+  matches    Match[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  matches   Match[]
+}
+
+model Match {
+  id         String   @id @default(cuid())
+  sessionId  String
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  mode       String
+  preset     String
+  aiLevel    String?
+  scoreX     Int
+  scoreO     Int
+  winner     String
+  playedAt   DateTime @default(now())
+}
