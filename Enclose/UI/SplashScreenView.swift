@@ -8,7 +8,7 @@ struct SplashScreenView: View {
     
     var body: some View {
         if isActive {
-            MainTabView()
+            HomeView()
         } else {
             ZStack {
                 AppTheme.background.ignoresSafeArea()
@@ -27,14 +27,16 @@ struct SplashScreenView: View {
                             let size: CGFloat = 60
                             
                             Path { path in
-                                path.move(to: CGPoint(x: center.x - size/2, y: center.y - size/2))
-                                path.addLine(to: CGPoint(x: center.x + size/2, y: center.y - size/2))
-                                path.addLine(to: CGPoint(x: center.x + size/2, y: center.y + size/2))
-                                path.addLine(to: CGPoint(x: center.x - size/2, y: center.y + size/2))
+                                path.move(to: CGPoint(x: center.x - size / 2, y: center.y - size / 2))
+                                path.addLine(to: CGPoint(x: center.x + size / 2, y: center.y - size / 2))
+                                path.addLine(to: CGPoint(x: center.x + size / 2, y: center.y + size / 2))
+                                path.addLine(to: CGPoint(x: center.x - size / 2, y: center.y + size / 2))
                                 path.closeSubpath()
                             }
                             .trim(from: 0, to: lineProgress)
-                            .stroke(AppTheme.playerX, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+                            .stroke(
+                                AppTheme.playerX,
+                                style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
                             
                             ForEach(0..<4) { i in
                                 let x = (i == 0 || i == 3) ? -1.0 : 1.0
@@ -43,7 +45,9 @@ struct SplashScreenView: View {
                                 Circle()
                                     .fill(AppTheme.textPrimary)
                                     .frame(width: 8, height: 8)
-                                    .position(x: center.x + CGFloat(x) * size/2, y: center.y + CGFloat(y) * size/2)
+                                    .position(
+                                        x: center.x + CGFloat(x) * size / 2, y: center.y + CGFloat(y) * size / 2
+                                    )
                                     .scaleEffect(lineProgress > Double(i) * 0.25 ? 1.0 : 0.0)
                             }
                         }
