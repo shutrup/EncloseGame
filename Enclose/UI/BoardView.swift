@@ -77,8 +77,19 @@ struct BoardView: View {
             if let edge = engine.board.edges.first(where: { $0.id == edgeId }) {
                 let p1 = project(engine.board.nodes[edge.a].position, center: center, scale: scale, bounds: bounds)
                 let p2 = project(engine.board.nodes[edge.b].position, center: center, scale: scale, bounds: bounds)
+                let isLastMove = engine.lastMove?.edgeId == edgeId
+                let lastMoveColor: Color = {
+                    guard let move = engine.lastMove else { return AppTheme.activeLine }
+                    return move.player == .x ? AppTheme.playerX : AppTheme.playerO
+                }()
                 
-                AnimatedEdge(p1: p1, p2: p2, color: AppTheme.activeLine, isAnimated: animationsEnabled)
+                AnimatedEdge(
+                    p1: p1,
+                    p2: p2,
+                    color: isLastMove ? lastMoveColor : AppTheme.activeLine,
+                    isAnimated: animationsEnabled,
+                    emphasize: isLastMove
+                )
             }
         }
     }
@@ -235,13 +246,23 @@ struct AnimatedEdge: View {
     let p2: CGPoint
     let color: Color
     let isAnimated: Bool
+    let emphasize: Bool
     
     @State private var progress: CGFloat = 0.0
     
     var body: some View {
         EdgeShape(p1: p1, p2: p2)
             .trim(from: 0.5 - (0.5 * progress), to: 0.5 + (0.5 * progress))
-            .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+            .stroke(color, style: StrokeStyle(lineWidth: emphasize ? 4.8 : 4, lineCap: .round))
+            .overlay {
+                if emphasize {
+                    EdgeShape(p1: p1, p2: p2)
+                        .trim(from: 0.5 - (0.5 * progress), to: 0.5 + (0.5 * progress))
+                        .stroke(color.opacity(0.34), style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .blur(radius: 2.2)
+                        .allowsHitTesting(false)
+                }
+            }
             .onAppear {
                 if isAnimated {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -251,6 +272,7 @@ struct AnimatedEdge: View {
                     progress = 1.0
                 }
             }
+            .animation(.easeInOut(duration: 0.2), value: emphasize)
     }
 }
 

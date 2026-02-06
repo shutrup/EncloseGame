@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct GameView: View {
     @StateObject var engine: GameEngine
@@ -11,6 +12,9 @@ struct GameView: View {
     @AppStorage("animationsEnabled") private var animationsEnabled = true
     
     @State private var showingNewGameSheet = false
+    @State private var turnBadgeScale: CGFloat = 1.0
+    @State private var previousPlayer: Player?
+    private let turnChangeHaptic = UIImpactFeedbackGenerator(style: .light)
     
     var body: some View {
         GeometryReader { proxy in
@@ -55,7 +59,7 @@ struct GameView: View {
                         StatPill(
                             icon: engine.aiLevel == nil ? "person.2.fill" : "brain.head.profile",
                             title: String(localized: "menu.mode"),
-                            value: engine.aiLevel == nil ? String(localized: "menu.pvp.short") : String(localized: "menu.single_player")
+                            value: engine.aiLevel == nil ? String(localized: "menu.pvp.short") : String(localized: "menu.single_player.short")
                         )
                     }
                     .frame(maxWidth: .infinity)
@@ -80,6 +84,17 @@ struct GameView: View {
                 }
                 .disabled(engine.isProcessingMove)
             }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    RulesView()
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                .disabled(engine.isProcessingMove)
+            }
             
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -96,8 +111,12 @@ struct GameView: View {
             NewGameSheet(engine: engine, isPresented: $showingNewGameSheet)
                 .presentationDetents([.medium])
         }
+        .onAppear {
+            previousPlayer = engine.state.currentPlayer
+        }
         .onChange(of: engine.state.currentPlayer) {
             handleAITurn(player: engine.state.currentPlayer)
+            animateTurnChange(to: engine.state.currentPlayer)
         }
         .overlay {
             if engine.state.isGameOver {
@@ -136,6 +155,7 @@ struct GameView: View {
                 .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         )
         .clipShape(Capsule())
+        .scaleEffect(turnBadgeScale)
     }
 
     private func boardStage(height: CGFloat) -> some View {
@@ -186,6 +206,26 @@ struct GameView: View {
         // GameEngine.makeAIMove() handles the rest.
         if player == .o && engine.aiLevel != nil && !engine.state.isGameOver {
             engine.makeAIMove()
+        }
+    }
+
+    private func animateTurnChange(to newPlayer: Player) {
+        guard let oldPlayer = previousPlayer else {
+            previousPlayer = newPlayer
+            return
+        }
+        guard oldPlayer != newPlayer else { return }
+        previousPlayer = newPlayer
+        
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.55)) {
+            turnBadgeScale = 1.05
+        }
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.8).delay(0.08)) {
+            turnBadgeScale = 1.0
+        }
+        
+        if hapticsEnabled {
+            turnChangeHaptic.impactOccurred(intensity: 0.55)
         }
     }
 }

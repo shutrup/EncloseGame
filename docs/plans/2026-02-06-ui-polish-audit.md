@@ -11,17 +11,18 @@
 - [x] Reduced excessive vertical emptiness on game screen by replacing spacer-heavy layout.
 - [x] Added compact game progress strip (edges, zones, mode) to use space meaningfully.
 - [x] Refined setup screen into section cards with concise selected-options summary.
+- [x] Added subtle last-move emphasis on the board (player-colored line + glow).
+- [x] Added turn switch micro-feedback (status badge pulse + optional haptic).
+- [x] Added in-match quick access to Rules from game toolbar.
 
 ## Next Priority Improvements
 
 ### P1: Gameplay Readability
-- Add subtle "last move" highlight pulse on most recently drawn edge.
 - Add optional "capturable cell" hint for beginners (toggle in Settings).
 - Improve color separation for X/O in low-contrast accessibility contexts.
 
 ### P1: Motion & Feedback
 - Introduce short transition between setup -> game (card morph/fade).
-- Add micro-feedback for turn switch (badge pulse + gentle haptic gate by setting).
 - Add win state celebratory sequence tied to captured majority, not only modal.
 
 ### P2: Information Architecture
@@ -35,7 +36,6 @@
 - Add subtle background texture/gradient layer for depth consistency.
 
 ### P3: Navigation & Discoverability
-- Add quick access to Rules from game screen (help icon).
 - Add onboarding re-entry from setup summary card.
 - Consider replacing splash with faster branded launch state.
 

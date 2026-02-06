@@ -7,6 +7,7 @@ final class GameEngine: ObservableObject {
     private(set) var preset: BoardPreset
     @Published var aiLevel: AILevel?  // nil = PvP
     @Published var isProcessingMove = false  // UI Activity Indicator & Lock
+    @Published private(set) var lastMove: LastMove?
     private var aiMoveGeneration: UInt64 = 0
     private var isAIMoveScheduled = false
     
@@ -22,8 +23,10 @@ final class GameEngine: ObservableObject {
     func play(edgeId: Int) -> Bool {
         guard board.edges.contains(where: { $0.id == edgeId }) else { return false }
         guard !state.occupiedEdges.contains(edgeId) else { return false }
+        let mover = state.currentPlayer
         
         state.occupiedEdges.insert(edgeId)
+        lastMove = LastMove(edgeId: edgeId, player: mover)
         
         var capturedAny = false
         for i in state.zones.indices {
@@ -55,6 +58,7 @@ final class GameEngine: ObservableObject {
         
         board = BoardLayout.from(rows: self.preset.rows)
         state = GameState(zones: board.zones)
+        lastMove = nil
     }
     
     func setAI(_ level: AILevel?) {

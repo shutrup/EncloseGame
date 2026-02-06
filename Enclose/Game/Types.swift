@@ -30,3 +30,8 @@ struct Zone: Identifiable, Equatable {
     let edgeIds: [Int]
     var owner: ZoneOwner
 }
+
+struct LastMove: Equatable {
+    let edgeId: Int
+    let player: Player
+}
