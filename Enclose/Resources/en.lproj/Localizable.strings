@@ -2,6 +2,7 @@
 "turn.x" = "X Turn";
 "turn.o" = "O Turn";
 "new_game" = "New Game";
+"new_game.short" = "New";
 "play_again" = "Play Again";
 "winner.draw" = "Draw";
 "winner.x" = "X Wins";

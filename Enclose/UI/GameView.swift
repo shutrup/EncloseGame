@@ -3,6 +3,7 @@ import UIKit
 
 struct GameView: View {
     @StateObject var engine: GameEngine
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     init(engine: GameEngine = GameEngine()) {
         _engine = StateObject(wrappedValue: engine)
@@ -75,11 +76,19 @@ struct GameView: View {
         .navigationTitle("Enclose")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Enclose")
+                    .font(.headline.weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
+            }
+        }
+        .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showingNewGameSheet = true
                 } label: {
-                    Text(LocalizedStringKey("new_game"))
+                    Text(LocalizedStringKey(horizontalSizeClass == .compact ? "new_game.short" : "new_game"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(AppTheme.accent)
                 }
@@ -97,16 +106,6 @@ struct GameView: View {
                 .disabled(engine.isProcessingMove)
             }
             
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    engine.reset()
-                } label: {
-                    Text(LocalizedStringKey("menu.refresh"))
-                        .font(.subheadline)
-                        .foregroundStyle(AppTheme.textSecondary)
-                }
-                .disabled(engine.isProcessingMove)
-            }
         }
         .sheet(isPresented: $showingNewGameSheet) {
             NewGameSheet(engine: engine, isPresented: $showingNewGameSheet)

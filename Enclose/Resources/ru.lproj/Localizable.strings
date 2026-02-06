@@ -2,6 +2,7 @@
 "turn.x" = "Ход X";
 "turn.o" = "Ход O";
 "new_game" = "Новая игра";
+"new_game.short" = "Новая";
 "play_again" = "Играть снова";
 "winner.draw" = "Ничья";
 "winner.x" = "Победа X";
