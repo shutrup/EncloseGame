@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
+import { useTelegramBackButton } from '../hooks/useTelegram';
 
 const rules = [
     {
@@ -35,12 +36,14 @@ interface RulesScreenProps {
 export function RulesScreen({ fromGame }: RulesScreenProps) {
     const closeRules = useGameStore((s) => s.closeRules);
 
+    useTelegramBackButton(closeRules);
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
         >
             <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
@@ -49,16 +52,8 @@ export function RulesScreen({ fromGame }: RulesScreenProps) {
                 className="mx-4 flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900"
             >
                 {/* Header */}
-                <header className="flex shrink-0 items-center gap-3 border-b border-white/10 px-4 py-3">
-                    <button
-                        type="button"
-                        onClick={closeRules}
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg"
-                    >
-                        ‹
-                    </button>
-                    <h1 className="flex-1 text-center text-xl font-bold">Правила</h1>
-                    <div className="w-9" />
+                <header className="flex shrink-0 items-center justify-center border-b border-white/10 px-4 py-4 relative">
+                    <h1 className="text-center text-xl font-bold">Правила</h1>
                 </header>
 
                 {/* Content */}
