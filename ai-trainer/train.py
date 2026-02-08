@@ -12,8 +12,9 @@ def train_agent(episodes=100000):
     wins = {'learn': 0, 'opponent': 0, 'draw': 0}
     start_time = time.time()
     
-    for episode in range(episodes):
-        game = Game(preset='mini') # Train on Mini for speed
+    try:
+        for episode in range(episodes):
+            game = Game(preset='mini') # Train on Mini for speed
         
         # Randomize who starts?
         turn = 'x'
@@ -114,8 +115,11 @@ def train_agent(episodes=100000):
         elif game.winner == 'o': wins['opponent'] += 1
         else: wins['draw'] += 1
         
-        if episode % 1000 == 0:
-            print(f"Episode {episode}: {wins}")
+            if episode % 1000 == 0:
+                print(f"Episode {episode}: {wins}")
+                
+    except KeyboardInterrupt:
+        print("\nTraining interrupted by user.")
             
     print(f"Training finished. Win rates: {wins}")
     
