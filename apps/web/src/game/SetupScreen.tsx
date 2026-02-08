@@ -4,7 +4,7 @@ import type { AILevel, BoardPreset } from '@enclose/game-core';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { useGameStore } from '../store/gameStore';
 import { useI18n } from '../store/i18n';
-import { useTelegramBackButton, useTelegramMainButton } from '../hooks/useTelegram';
+// Native hooks removed/commented out as per user request to restore custom UI
 
 type GameMode = 'pvp' | 'single';
 
@@ -36,10 +36,10 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 
 export function SetupScreen() {
   const { setup, setPreset, setMode, setDifficulty, startGame, backToHome } = useGameStore();
-  const { t } = useI18n(); // Using i18n if available, effectively
+  const { t } = useI18n();
 
-  useTelegramBackButton(backToHome);
-  useTelegramMainButton('Играть', startGame);
+  // useTelegramBackButton(backToHome);
+  // useTelegramMainButton('Играть', startGame);
 
   return (
     <motion.div
@@ -51,9 +51,17 @@ export function SetupScreen() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-2 shrink-0 flex items-center justify-center gap-3 relative"
+        className="mb-2 shrink-0 flex items-center justify-between relative"
       >
-        <h1 className="flex-1 text-center text-2xl font-black tracking-tight">Настройка игры</h1>
+        <button
+          type="button"
+          onClick={backToHome}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-2xl text-white transition active:bg-white/10"
+        >
+          ‹
+        </button>
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-2xl font-black tracking-tight">Настройка игры</h1>
+        <div className="w-11" />
       </motion.header>
 
       <div className="flex-1 overflow-y-auto py-2">
@@ -95,7 +103,20 @@ export function SetupScreen() {
         </div>
       </div>
 
-
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.25 }}
+        className="pt-4 shrink-0 pb-[env(safe-area-inset-bottom)]"
+      >
+        <button
+          type="button"
+          onClick={startGame}
+          className="w-full rounded-xl bg-[#007AFF] px-6 py-3.5 text-xl font-semibold text-white shadow-lg transition active:opacity-80 active:scale-[0.98]"
+        >
+          Играть
+        </button>
+      </motion.div>
     </motion.div>
   );
 }

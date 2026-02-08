@@ -5,7 +5,7 @@ import { soundManager } from '../lib/soundManager';
 import { hapticImpact } from '../lib/telegram';
 import { gameSummary, useGameStore } from '../store/gameStore';
 import { BoardSvg } from './BoardSvg';
-import { useTelegramBackButton } from '../hooks/useTelegram';
+// import { useTelegramBackButton } from '../hooks/useTelegram';
 
 export function GameScreen() {
   const {
@@ -24,7 +24,7 @@ export function GameScreen() {
     rulesOpen
   } = useGameStore();
 
-  useTelegramBackButton(backToSetup);
+  // useTelegramBackButton(backToSetup);
 
   const [particleTrigger, setParticleTrigger] = useState<{ x: number; y: number } | null>(null);
   const [particleColor, setParticleColor] = useState('#1690ff');
@@ -125,7 +125,13 @@ export function GameScreen() {
         transition={{ duration: 0.25 }}
         className="relative mb-1 flex shrink-0 items-center justify-between"
       >
-        <div className="w-10" />
+        <button
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg font-bold transition active:scale-95"
+          onClick={backToSetup}
+        >
+          ‹
+        </button>
 
         <div className="absolute left-1/2 -translate-x-1/2 text-xl font-extrabold">Enclose</div>
 

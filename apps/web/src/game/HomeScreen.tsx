@@ -5,7 +5,7 @@ import { useTelegramMainButton } from '../hooks/useTelegram';
 export function HomeScreen() {
     const { goToSetup, openRules, openSettings } = useGameStore();
 
-    useTelegramMainButton('Играть', goToSetup);
+    // useTelegramMainButton('Играть', goToSetup);
 
     return (
         <div className="flex min-h-dvh flex-col items-center justify-center px-6">
@@ -50,6 +50,13 @@ export function HomeScreen() {
                 transition={{ delay: 0.2, duration: 0.4 }}
                 className="flex w-full max-w-xs flex-col gap-4"
             >
+                <button
+                    type="button"
+                    onClick={goToSetup}
+                    className="w-full rounded-full bg-gradient-to-r from-accent to-sky-500 px-6 py-5 text-2xl font-black text-white shadow-glow transition active:scale-[0.98]"
+                >
+                    Играть
+                </button>
 
 
                 <button

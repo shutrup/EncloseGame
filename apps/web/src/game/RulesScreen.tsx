@@ -36,7 +36,7 @@ interface RulesScreenProps {
 export function RulesScreen({ fromGame }: RulesScreenProps) {
     const closeRules = useGameStore((s) => s.closeRules);
 
-    useTelegramBackButton(closeRules);
+    // useTelegramBackButton(closeRules);
 
     return (
         <motion.div
@@ -52,8 +52,16 @@ export function RulesScreen({ fromGame }: RulesScreenProps) {
                 className="mx-4 flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900"
             >
                 {/* Header */}
-                <header className="flex shrink-0 items-center justify-center border-b border-white/10 px-4 py-4 relative">
-                    <h1 className="text-center text-xl font-bold">Правила</h1>
+                <header className="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-4 relative">
+                    <button
+                        type="button"
+                        onClick={closeRules}
+                        className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-lg text-white transition active:bg-white/10"
+                    >
+                        ‹
+                    </button>
+                    <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-xl font-bold">Правила</h1>
+                    <div className="w-9" />
                 </header>
 
                 {/* Content */}
