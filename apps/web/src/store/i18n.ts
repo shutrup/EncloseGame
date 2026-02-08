@@ -32,6 +32,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'setup.easy': 'Легкий',
         'setup.medium': 'Средний',
         'setup.hard': 'Сложный',
+        'setup.learning': 'Обучаемый (ML)',
 
         // GameScreen
         'game.new': 'Новая',
@@ -96,6 +97,7 @@ const translations: Record<Locale, Record<string, string>> = {
         'setup.easy': 'Easy',
         'setup.medium': 'Medium',
         'setup.hard': 'Hard',
+        'setup.learning': 'Learning (ML)',
 
         // GameScreen
         'game.new': 'New',

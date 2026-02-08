@@ -1,5 +1,6 @@
 import { cloneState, getScores } from './state';
 import { nextPlayer, type AILevel, type BoardLayout, type GameState } from './types';
+import { LearningAgent } from './ai-learning';
 
 export function bestMove(board: BoardLayout, state: GameState, level: AILevel): number | undefined {
   const available = board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
@@ -31,6 +32,11 @@ export function bestMove(board: BoardLayout, state: GameState, level: AILevel): 
 
     case 'hard':
       return solveMinimax(board, state, available);
+
+    case 'learning': {
+      const agent = new LearningAgent(); // Uses default trained weights
+      return agent.getBestMove(board, state, available);
+    }
 
     default:
       return randomFrom(available);
