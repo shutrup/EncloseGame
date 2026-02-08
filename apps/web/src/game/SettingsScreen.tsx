@@ -16,7 +16,7 @@ export function SettingsScreen() {
 
     const { locale, setLocale, t } = useI18n();
 
-    // useTelegramBackButton(closeSettings);
+    useTelegramBackButton(closeSettings);
 
     return (
         <div className="flex min-h-dvh flex-col px-4 pb-6 pt-4">
@@ -24,7 +24,7 @@ export function SettingsScreen() {
                 <button
                     type="button"
                     onClick={closeSettings}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-2xl text-white transition active:bg-white/10"
+                    className="hidden"
                 >
                     ‹
                 </button>

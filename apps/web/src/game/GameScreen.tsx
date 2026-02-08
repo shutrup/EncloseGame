@@ -6,7 +6,7 @@ import { hapticImpact } from '../lib/telegram';
 import { gameSummary, useGameStore } from '../store/gameStore';
 import { BoardSvg } from './BoardSvg';
 // import { BoardSvg } from './BoardSvg';
-// import { useTelegramBackButton } from '../hooks/useTelegram';
+import { useTelegramBackButton } from '../hooks/useTelegram';
 import { useI18n } from '../store/i18n';
 
 export function GameScreen() {
@@ -26,8 +26,9 @@ export function GameScreen() {
     rulesOpen
   } = useGameStore();
   const { t } = useI18n();
+  const [selectedEdge, setSelectedEdge] = useState<number | null>(null);
 
-  // useTelegramBackButton(backToSetup);
+  useTelegramBackButton(backToSetup);
 
   const [particleTrigger, setParticleTrigger] = useState<{ x: number; y: number } | null>(null);
   const [particleColor, setParticleColor] = useState('#1690ff');
@@ -105,10 +106,29 @@ export function GameScreen() {
 
   const handleEdgeClick = useCallback(
     (edgeId: number) => {
-      playMove(edgeId);
+      // If AI is thinking, ignore clicks
+      if (aiThinking) return;
+
+      // Double tap logic:
+      // 1. If edge is already selected -> Play Move
+      if (selectedEdge === edgeId) {
+        playMove(edgeId);
+        setSelectedEdge(null);
+        hapticImpact('heavy');
+      } else {
+        // 2. Otherwise -> Select Edge
+        setSelectedEdge(edgeId);
+        hapticImpact('light');
+        soundManager.play('pop'); // Optional feedback for selection
+      }
     },
-    [playMove]
+    [aiThinking, playMove, selectedEdge]
   );
+
+  // Clear selection if turn changes or game ends
+  useEffect(() => {
+    setSelectedEdge(null);
+  }, [session?.state.currentPlayer, summary?.isOver]);
 
   if (!session || !summary) {
     return null;
@@ -130,7 +150,7 @@ export function GameScreen() {
       >
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg font-bold transition active:scale-95"
+          className="hidden" // Hiding custom button
           onClick={backToSetup}
         >
           ‹
@@ -184,10 +204,11 @@ export function GameScreen() {
         <div className="relative z-10 flex h-full w-full items-center justify-center">
           <BoardSvg
             session={session}
-            disabled={aiThinking || (setup.mode === 'single' && session.state.currentPlayer === 'o')}
+            disabled={!!aiThinking || (setup.mode === 'single' && session.state.currentPlayer === 'o')}
             showHints={hintsEnabled}
             animationsEnabled={animationsEnabled}
             onEdgeClick={handleEdgeClick}
+            selectedEdge={selectedEdge}
           />
         </div>
         <ParticleEffect trigger={particleTrigger} color={particleColor} />

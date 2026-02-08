@@ -4,26 +4,11 @@ import type { AILevel, BoardPreset } from '@enclose/game-core';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { useGameStore } from '../store/gameStore';
 import { useI18n } from '../store/i18n';
-// Native hooks removed/commented out as per user request to restore custom UI
+import { useTelegramBackButton } from '../hooks/useTelegram';
 
 type GameMode = 'pvp' | 'single';
 
-const presetOptions: { value: BoardPreset; label: string }[] = [
-  { value: 'mini', label: 'Мини (13)' },
-  { value: 'standard', label: 'Стандарт (25)' },
-  { value: 'large', label: 'Большой (41)' }
-];
-
-const modeOptions: { value: GameMode; label: string }[] = [
-  { value: 'pvp', label: 'PvP' },
-  { value: 'single', label: 'Одиночная' }
-];
-
-const difficultyOptions: { value: AILevel; label: string }[] = [
-  { value: 'easy', label: 'Легкий' },
-  { value: 'medium', label: 'Средний' },
-  { value: 'hard', label: 'Сложный' }
-];
+// Options moved inside component for localization
 
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -38,8 +23,25 @@ export function SetupScreen() {
   const { setup, setPreset, setMode, setDifficulty, startGame, backToHome } = useGameStore();
   const { t } = useI18n();
 
-  // useTelegramBackButton(backToHome);
+  useTelegramBackButton(backToHome);
   // useTelegramMainButton('Играть', startGame);
+
+  const presetOptions: { value: BoardPreset; label: string }[] = [
+    { value: 'mini', label: t('setup.mini_label') },
+    { value: 'standard', label: t('setup.standard_label') },
+    { value: 'large', label: t('setup.large_label') }
+  ];
+
+  const modeOptions: { value: GameMode; label: string }[] = [
+    { value: 'pvp', label: t('setup.pvp') },
+    { value: 'single', label: t('setup.single') }
+  ];
+
+  const difficultyOptions: { value: AILevel; label: string }[] = [
+    { value: 'easy', label: t('setup.easy') },
+    { value: 'medium', label: t('setup.medium') },
+    { value: 'hard', label: t('setup.hard') }
+  ];
 
   return (
     <motion.div
@@ -56,7 +58,7 @@ export function SetupScreen() {
         <button
           type="button"
           onClick={backToHome}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-2xl text-white transition active:bg-white/10"
+          className="hidden" // Hiding custom button to rely on native back button
         >
           ‹
         </button>
@@ -71,7 +73,7 @@ export function SetupScreen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
           >
-            <Card title="Размер">
+            <Card title={t('setup.size')}>
               <SegmentedControl value={setup.preset} options={presetOptions} onChange={setPreset} />
             </Card>
           </motion.div>
@@ -81,7 +83,7 @@ export function SetupScreen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <Card title="Режим">
+            <Card title={t('setup.mode')}>
               <SegmentedControl value={setup.mode} options={modeOptions} onChange={setMode} />
             </Card>
           </motion.div>
@@ -94,7 +96,7 @@ export function SetupScreen() {
                 exit={{ opacity: 0, height: 0, marginTop: -12 }}
                 transition={{ duration: 0.25 }}
               >
-                <Card title="Сложность">
+                <Card title={t('setup.difficulty')}>
                   <SegmentedControl value={setup.difficulty} options={difficultyOptions} onChange={setDifficulty} />
                 </Card>
               </motion.div>
