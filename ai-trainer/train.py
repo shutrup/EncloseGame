@@ -4,10 +4,12 @@ import time
 from game import Game
 from agent import ApproximateQLearningAgent
 
-def train_agent(episodes=1000):
-    agent = ApproximateQLearningAgent(alpha=0.01, gamma=0.9, epsilon=0.1)
+import sys
+
+def train_agent(episodes=100000):
+    agent = ApproximateQLearningAgent(alpha=0.001, gamma=0.9, epsilon=0.1)
     
-    wins = {'learn': 0, 'random': 0, 'draw': 0}
+    wins = {'learn': 0, 'opponent': 0, 'draw': 0}
     start_time = time.time()
     
     for episode in range(episodes):
@@ -78,14 +80,27 @@ def train_agent(episodes=1000):
                     # Or just immediate update?
                     
             else:
-                # Random Opponent
+                # Opponent Turn (Greedy - captures if possible, else random)
+                # This teaches the AI defense (not to give easy captures)
+                
+                # Check for captures
                 legal = game.get_legal_moves()
-                if legal:
+                move = None
+                
+                # strict greedy: find move that completes a box
+                for m in legal:
+                    # Simulation check is expensive, check board structure directly?
+                    # Or just quick simulation
+                    # We can use the agent's "completes_box" logic if we want, or just game logic
+                    if creates_box(game, m):
+                        move = m
+                        break
+                        
+                if move is None and legal:
                     move = random.choice(legal)
-                    game.play_move(move)
                     
-                    # If opponent captured, negative reward for agent?
-                    # Only if agent *gave* it implementation-wise.
+                if move is not None:
+                    game.play_move(move)
                 else: break
         
         # Game Over
@@ -96,10 +111,10 @@ def train_agent(episodes=1000):
             
         # Stats
         if game.winner == 'x': wins['learn'] += 1
-        elif game.winner == 'o': wins['random'] += 1
+        elif game.winner == 'o': wins['opponent'] += 1
         else: wins['draw'] += 1
         
-        if episode % 100 == 0:
+        if episode % 1000 == 0:
             print(f"Episode {episode}: {wins}")
             
     print(f"Training finished. Win rates: {wins}")
@@ -114,5 +129,16 @@ def copy_game(game):
     import copy
     return copy.deepcopy(game) # Slow but correct for MVP
 
+def creates_box(game, edge_id):
+    # Helper to see if a move closes a box
+    zones = [z for z in game.layout.zones if edge_id in z.edge_ids]
+    for z in zones:
+        occupied = sum(1 for eid in z.edge_ids if eid in game.state.occupied_edges)
+        if occupied == 3: return True
+    return False
+
 if __name__ == "__main__":
-    train_agent()
+    episodes = 100000
+    if len(sys.argv) > 1:
+        episodes = int(sys.argv[1])
+    train_agent(episodes)
