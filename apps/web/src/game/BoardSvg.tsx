@@ -99,28 +99,46 @@ export function BoardSvg({ session, disabled, showHints, animationsEnabled, onEd
               : GRID_COLOR;
 
           const edgeLength = Math.hypot(b.x - a.x, b.y - a.y);
+          const isInteractive = !occupied && !disabled;
 
           return (
-            <line
+            <g
               key={`edge-${edge.id}`}
-              x1={a.x}
-              y1={a.y}
-              x2={b.x}
-              y2={b.y}
-              stroke={color}
-              strokeOpacity={isLastMove ? 1 : occupied ? 0.95 : 1}
-              strokeWidth={occupied ? 0.22 : 0.14}
-              strokeLinecap="round"
-              style={
-                isNew && animationsEnabled
-                  ? {
-                    strokeDasharray: edgeLength,
-                    strokeDashoffset: edgeLength,
-                    animation: 'edge-grow 0.3s ease-out forwards'
-                  }
-                  : undefined
-              }
-            />
+              className={isInteractive ? 'group cursor-pointer' : ''}
+              onClick={() => isInteractive && onEdgeClick(edge.id)}
+            >
+              {/* Hit area - invisible but catchs hover/clicks */}
+              <line
+                x1={a.x}
+                y1={a.y}
+                x2={b.x}
+                y2={b.y}
+                stroke="transparent"
+                strokeWidth="0.8"
+              />
+
+              {/* Visual line */}
+              <line
+                x1={a.x}
+                y1={a.y}
+                x2={b.x}
+                y2={b.y}
+                stroke={color}
+                strokeOpacity={isLastMove ? 1 : occupied ? 0.95 : 1}
+                strokeWidth={occupied ? 0.22 : 0.14}
+                strokeLinecap="round"
+                className={`transition-all duration-200 ${isInteractive ? 'group-hover:stroke-white/80 group-hover:stroke-[0.18]' : ''}`}
+                style={
+                  isNew && animationsEnabled
+                    ? {
+                      strokeDasharray: edgeLength,
+                      strokeDashoffset: edgeLength,
+                      animation: 'edge-grow 0.3s ease-out forwards'
+                    }
+                    : undefined
+                }
+              />
+            </g>
           );
         })}
 
