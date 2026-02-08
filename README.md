@@ -1,94 +1,79 @@
-# Enclose: iOS + Telegram Mini App Monorepo
+# Enclose 🎮
 
-This repository now contains:
+Стратегическая игра "Точки и квадраты" — Telegram Mini App
 
-- Existing iOS app (SwiftUI) in `/Enclose`
-- Telegram Mini App frontend (React + Vite + Tailwind + Zustand + Framer Motion) in `/apps/web`
-- Backend scaffold (NestJS + Prisma + PostgreSQL) in `/apps/api`
-- Shared game logic package (TypeScript port of board/engine/AI) in `/packages/game-core`
+![Enclose Game](https://img.shields.io/badge/Platform-Telegram%20Mini%20App-blue)
+![React](https://img.shields.io/badge/React-18-61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6)
+![Vite](https://img.shields.io/badge/Vite-6.4-646cff)
 
-## Stack (fixed)
+## 🎯 Описание
 
-- UI: React 18
-- Types: TypeScript
-- Bundler: Vite
-- Styles: Tailwind CSS
-- State: Zustand
-- Motion: Framer Motion
-- API: NestJS
-- ORM: Prisma
-- DB: PostgreSQL
-- Deploy: Railway
+Enclose — это классическая игра "Точки и квадраты" с современным дизайном и плавными анимациями. Соединяй точки, захватывай квадраты и побеждай!
 
-## Monorepo layout
+## ✨ Особенности
 
-- `/apps/web` Telegram Mini App client
-- `/apps/api` Nest API + Prisma schema
-- `/packages/game-core` shared gameplay core (rules + AI)
-- `/Enclose` existing iOS app (kept intact)
+- 🎨 **Современный UI** — градиенты, glassmorphism, анимации
+- 🤖 **AI противник** — 3 уровня сложности (легкий, средний, сложный)
+- 👥 **PvP режим** — игра вдвоём на одном устройстве
+- 🎵 **Звуковые эффекты** — клики, захваты, победа
+- 📱 **Telegram интеграция** — haptic feedback, native UI
+- 🌍 **Локализация** — русский и английский языки
+- 📐 **3 размера поля** — мини (13), стандарт (25), большой (41)
 
-## Local setup
+## 🛠 Технологии
 
-1. Install dependencies from repo root:
+| Категория | Технология |
+|-----------|------------|
+| UI | React 18 |
+| Типы | TypeScript |
+| Сборка | Vite |
+| Стили | Tailwind CSS |
+| State | Zustand |
+| Анимации | Framer Motion |
+
+## 🚀 Запуск
 
 ```bash
+# Установка зависимостей
 npm install
-```
 
-2. Start web app:
-
-```bash
+# Разработка
 npm run dev:web
+
+# Production билд
+npm run build --workspace=@enclose/web
 ```
 
-3. Start API:
+## 📁 Структура
 
-```bash
-npm run dev:api
+```
+apps/
+├── web/                    # Telegram Mini App (React)
+│   ├── src/
+│   │   ├── game/          # Экраны игры
+│   │   ├── components/    # UI компоненты
+│   │   ├── store/         # Zustand stores
+│   │   └── lib/           # Утилиты
+│   └── dist/              # Production билд
+└── api/                    # Backend (опционально)
+
+packages/
+└── game-core/             # Игровая логика (shared)
 ```
 
-4. Optional: run both in two terminals.
+## 📱 Деплой в Telegram
 
-## Environment
+1. Собрать production билд
+2. Задеплоить на Railway/Vercel/Netlify
+3. Создать бота через @BotFather (`/newbot`)
+4. Подключить Mini App (`/newapp`)
+5. Готово! 🎉
 
-### Web (`apps/web/.env.example`)
+## 📄 Лицензия
 
-- `VITE_API_BASE_URL`
-- `VITE_TELEGRAM_BOT_USERNAME`
+MIT License — см. [LICENSE](LICENSE)
 
-### API (`apps/api/.env.example`)
+---
 
-- `PORT`
-- `DATABASE_URL`
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_WEBAPP_URL`
-
-## Telegram Mini App wiring
-
-1. Create Telegram bot via BotFather.
-2. Set Mini App URL in bot settings (HTTPS only).
-3. Point to deployed frontend URL.
-4. Pass `initData` to API `/telegram/validate` for server-side verification workflow.
-
-## Prisma
-
-From repo root:
-
-```bash
-npm --workspace @enclose/api run prisma:generate
-npm --workspace @enclose/api run prisma:migrate
-```
-
-## Railway deployment
-
-Recommended: two services in one Railway project.
-
-- Service A (`web`): root directory `apps/web`
-- Service B (`api`): root directory `apps/api`
-
-Each service includes its own `railway.toml` template.
-
-## Notes
-
-- Existing iOS app is not removed.
-- Game rules and AI are centralized in `@enclose/game-core` for parity across platforms.
+Made with ❤️ for Telegram
