@@ -15,7 +15,7 @@ import {
 
 type GameMode = 'pvp' | 'single';
 
-type Screen = 'setup' | 'game';
+type Screen = 'home' | 'setup' | 'game' | 'settings';
 
 interface SetupState {
   preset: BoardPreset;
@@ -29,15 +29,23 @@ interface GameStore {
   session?: GameSession;
   aiThinking: boolean;
   hintsEnabled: boolean;
+  soundEnabled: boolean;
+  animationsEnabled: boolean;
   rulesOpen: boolean;
 
   setPreset: (preset: BoardPreset) => void;
   setMode: (mode: GameMode) => void;
   setDifficulty: (level: AILevel) => void;
   setHintsEnabled: (enabled: boolean) => void;
+  setSoundEnabled: (enabled: boolean) => void;
+  setAnimationsEnabled: (enabled: boolean) => void;
 
+  goToSetup: () => void;
   startGame: () => void;
   backToSetup: () => void;
+  backToHome: () => void;
+  openSettings: () => void;
+  closeSettings: () => void;
   resetMatch: () => void;
   playMove: (edgeId: number) => void;
   closeGameOver: () => void;
@@ -96,7 +104,7 @@ function scheduleAIMove(set: (update: Partial<GameStore>) => void, get: () => Ga
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  screen: 'setup',
+  screen: 'home',
   setup: {
     preset: 'standard',
     mode: 'pvp',
@@ -104,12 +112,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   aiThinking: false,
   hintsEnabled: true,
+  soundEnabled: true,
+  animationsEnabled: true,
   rulesOpen: false,
 
   setPreset: (preset) => set((state) => ({ setup: { ...state.setup, preset } })),
   setMode: (mode) => set((state) => ({ setup: { ...state.setup, mode } })),
   setDifficulty: (difficulty) => set((state) => ({ setup: { ...state.setup, difficulty } })),
   setHintsEnabled: (hintsEnabled) => set({ hintsEnabled }),
+  setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
+  setAnimationsEnabled: (animationsEnabled) => set({ animationsEnabled }),
+
+  goToSetup: () => set({ screen: 'setup' }),
 
   startGame: () => {
     clearAiTimer();
@@ -131,6 +145,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     clearAiTimer();
     set({ screen: 'setup', session: undefined, aiThinking: false, rulesOpen: false });
   },
+
+  backToHome: () => {
+    clearAiTimer();
+    set({ screen: 'home', session: undefined, aiThinking: false, rulesOpen: false });
+  },
+
+  openSettings: () => set({ screen: 'settings' }),
+  closeSettings: () => set({ screen: 'home' }),
 
   resetMatch: () => {
     clearAiTimer();

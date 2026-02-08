@@ -4,18 +4,63 @@
 
 :root {
   color-scheme: dark;
+
+  /* Theme colors */
+  --color-bg: #050608;
+  --color-panel: rgba(15, 23, 42, 0.8);
+  --color-accent: #1790ff;
+  --color-x: #3b82f6;
+  --color-o: #ef4444;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-medium: rgba(255, 255, 255, 0.2);
+  --border-strong: rgba(255, 255, 255, 0.3);
+
+  /* Shadows */
+  --shadow-glow: 0 4px 30px rgba(23, 144, 255, 0.3);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Responsive text */
+  --text-xs: clamp(0.65rem, 2vw, 0.75rem);
+  --text-sm: clamp(0.8rem, 2.5vw, 0.875rem);
+  --text-base: clamp(0.9rem, 3vw, 1rem);
+  --text-lg: clamp(1rem, 3.5vw, 1.125rem);
+  --text-xl: clamp(1.1rem, 4vw, 1.25rem);
+  --text-2xl: clamp(1.3rem, 5vw, 1.5rem);
+  --text-3xl: clamp(1.5rem, 6vw, 1.875rem);
+  --text-4xl: clamp(1.8rem, 7vw, 2.25rem);
+  --text-5xl: clamp(2rem, 8vw, 3rem);
+  --text-6xl: clamp(2.5rem, 10vw, 3.75rem);
+
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
 }
 
 html,
 body,
 #root {
   width: 100%;
-  min-height: 100%;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
   font-family: 'Inter', 'SF Pro Display', 'Segoe UI', sans-serif;
   background: #050608;
   color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 * {
@@ -25,4 +70,46 @@ body,
 
 button {
   font: inherit;
+  touch-action: manipulation;
+}
+
+/* Responsive typography utilities */
+.text-responsive-xs {
+  font-size: var(--text-xs);
+}
+
+.text-responsive-sm {
+  font-size: var(--text-sm);
+}
+
+.text-responsive-base {
+  font-size: var(--text-base);
+}
+
+.text-responsive-lg {
+  font-size: var(--text-lg);
+}
+
+.text-responsive-xl {
+  font-size: var(--text-xl);
+}
+
+.text-responsive-2xl {
+  font-size: var(--text-2xl);
+}
+
+.text-responsive-3xl {
+  font-size: var(--text-3xl);
+}
+
+.text-responsive-4xl {
+  font-size: var(--text-4xl);
+}
+
+.text-responsive-5xl {
+  font-size: var(--text-5xl);
+}
+
+.text-responsive-6xl {
+  font-size: var(--text-6xl);
 }

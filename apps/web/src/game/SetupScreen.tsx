@@ -33,30 +33,59 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function SetupScreen() {
-  const { setup, setPreset, setMode, setDifficulty, startGame } = useGameStore();
+  const { setup, setPreset, setMode, setDifficulty, startGame, backToHome } = useGameStore();
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[860px] flex-col px-4 pb-5 pt-4">
-      <header className="mb-4 flex items-center justify-center">
-        <h1 className="text-4xl font-black tracking-tight">Настройка игры</h1>
-      </header>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="mx-auto flex min-h-dvh w-full max-w-[860px] flex-col px-4 pb-5 pt-4"
+    >
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-4 flex items-center gap-3"
+      >
+        <button
+          type="button"
+          onClick={backToHome}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-xl transition active:scale-95"
+        >
+          ←
+        </button>
+        <h1 className="flex-1 text-center text-4xl font-black tracking-tight">Настройка игры</h1>
+        <div className="w-11" />
+      </motion.header>
 
       <div className="flex flex-col gap-4">
-        <Card title="Размер">
-          <SegmentedControl value={setup.preset} options={presetOptions} onChange={setPreset} />
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+        >
+          <Card title="Размер">
+            <SegmentedControl value={setup.preset} options={presetOptions} onChange={setPreset} />
+          </Card>
+        </motion.div>
 
-        <Card title="Режим">
-          <SegmentedControl value={setup.mode} options={modeOptions} onChange={setMode} />
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <Card title="Режим">
+            <SegmentedControl value={setup.mode} options={modeOptions} onChange={setMode} />
+          </Card>
+        </motion.div>
 
         <AnimatePresence initial={false}>
           {setup.mode === 'single' ? (
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.16 }}
+              initial={{ opacity: 0, height: 0, marginTop: -16 }}
+              animate={{ opacity: 1, height: 'auto', marginTop: 0 }}
+              exit={{ opacity: 0, height: 0, marginTop: -16 }}
+              transition={{ duration: 0.25 }}
             >
               <Card title="Сложность">
                 <SegmentedControl value={setup.difficulty} options={difficultyOptions} onChange={setDifficulty} />
@@ -65,30 +94,41 @@ export function SetupScreen() {
           ) : null}
         </AnimatePresence>
 
-        <Card title="Выбранные параметры">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <InfoTag label="Размер" value={presetOptions.find((p) => p.value === setup.preset)?.label ?? '-'} />
-            <InfoTag label="Режим" value={modeOptions.find((m) => m.value === setup.mode)?.label ?? '-'} />
-            {setup.mode === 'single' ? (
-              <InfoTag
-                label="Сложность"
-                value={difficultyOptions.find((d) => d.value === setup.difficulty)?.label ?? '-'}
-              />
-            ) : null}
-          </div>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+        >
+          <Card title="Выбранные параметры">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <InfoTag label="Размер" value={presetOptions.find((p) => p.value === setup.preset)?.label ?? '-'} />
+              <InfoTag label="Режим" value={modeOptions.find((m) => m.value === setup.mode)?.label ?? '-'} />
+              {setup.mode === 'single' ? (
+                <InfoTag
+                  label="Сложность"
+                  value={difficultyOptions.find((d) => d.value === setup.difficulty)?.label ?? '-'}
+                />
+              ) : null}
+            </div>
+          </Card>
+        </motion.div>
       </div>
 
-      <div className="mt-auto pt-6">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.25 }}
+        className="mt-auto pt-6"
+      >
         <button
           type="button"
           onClick={startGame}
-          className="w-full rounded-full bg-gradient-to-r from-accent to-sky-500 px-6 py-5 text-5xl font-black text-white shadow-glow transition active:scale-[0.99]"
+          className="w-full rounded-full bg-gradient-to-r from-accent to-sky-500 px-6 py-5 text-5xl font-black text-white shadow-glow transition active:scale-[0.98]"
         >
           Играть
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

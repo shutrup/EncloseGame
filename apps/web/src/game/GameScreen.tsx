@@ -1,4 +1,8 @@
 import { motion } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ParticleEffect } from '../components/ParticleEffect';
+import { soundManager } from '../lib/soundManager';
+import { hapticImpact } from '../lib/telegram';
 import { gameSummary, useGameStore } from '../store/gameStore';
 import { BoardSvg } from './BoardSvg';
 
@@ -8,6 +12,8 @@ export function GameScreen() {
     setup,
     aiThinking,
     hintsEnabled,
+    animationsEnabled,
+    soundEnabled,
     setHintsEnabled,
     playMove,
     resetMatch,
@@ -17,76 +23,177 @@ export function GameScreen() {
     rulesOpen
   } = useGameStore();
 
-  if (!session) {
+  const [particleTrigger, setParticleTrigger] = useState<{ x: number; y: number } | null>(null);
+  const [particleColor, setParticleColor] = useState('#1690ff');
+  const boardRef = useRef<HTMLDivElement>(null);
+  const prevZonesRef = useRef<string[]>([]);
+
+  // Sync sound manager with store
+  useEffect(() => {
+    soundManager.setEnabled(soundEnabled);
+  }, [soundEnabled]);
+
+  // Detect zone captures for particles and sounds
+  useEffect(() => {
+    if (!session) return;
+
+    const currentOwners = session.state.zones.map((z) => z.owner);
+    const prevOwners = prevZonesRef.current;
+
+    if (prevOwners.length > 0) {
+      let captured = false;
+      for (let i = 0; i < currentOwners.length; i++) {
+        if (prevOwners[i] === 'none' && currentOwners[i] !== 'none') {
+          captured = true;
+          // Trigger particles at zone center
+          if (boardRef.current && animationsEnabled) {
+            const zone = session.state.zones[i];
+            const boardRect = boardRef.current.getBoundingClientRect();
+            const points = zone.nodeIds.map((id) => session.board.nodes[id].position);
+            const cx = points.reduce((a, p) => a + p.x, 0) / points.length;
+            const cy = points.reduce((a, p) => a + p.y, 0) / points.length;
+
+            // Simple projection (approximate center)
+            const relX = 0.5 + cx / 16;
+            const relY = 0.5 - cy / 16;
+            setParticleColor(currentOwners[i] === 'x' ? '#1690ff' : '#ff4a55');
+            setParticleTrigger({
+              x: boardRect.width * relX,
+              y: boardRect.height * relY
+            });
+            setTimeout(() => setParticleTrigger(null), 100);
+          }
+          break;
+        }
+      }
+
+      if (captured) {
+        soundManager.play('capture');
+        hapticImpact('rigid');
+      } else if (session.state.occupiedEdges.size > 0 && session.state.occupiedEdges.size !== prevOccupiedRef.current) {
+        soundManager.play('pop');
+        hapticImpact('light');
+      }
+    }
+
+    prevZonesRef.current = currentOwners;
+  }, [session?.state.zones, session?.state.occupiedEdges.size, animationsEnabled]);
+
+  // Track occupied edges for pop sound
+  const prevOccupiedRef = useRef(0);
+  useEffect(() => {
+    if (session) {
+      prevOccupiedRef.current = session.state.occupiedEdges.size;
+    }
+  }, [session?.state.occupiedEdges.size]);
+
+  // Play win sound when game ends
+  const summary = session ? gameSummary(session) : null;
+  const wasOverRef = useRef(false);
+  useEffect(() => {
+    if (summary?.isOver && !wasOverRef.current) {
+      soundManager.play('win');
+    }
+    wasOverRef.current = summary?.isOver ?? false;
+  }, [summary?.isOver]);
+
+  const handleEdgeClick = useCallback(
+    (edgeId: number) => {
+      playMove(edgeId);
+    },
+    [playMove]
+  );
+
+  if (!session || !summary) {
     return null;
   }
 
-  const summary = gameSummary(session);
   const modeLabel = setup.mode === 'single' ? 'Одиночная' : 'PvP';
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[900px] flex-col px-4 pb-5 pt-3">
-      <header className="mb-2 grid grid-cols-[auto_1fr_auto] items-center gap-2">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="mx-auto flex h-dvh w-full max-w-[900px] flex-col overflow-hidden px-4 pb-3 pt-2"
+    >
+      <motion.header
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="relative mb-1 flex shrink-0 items-center justify-between"
+      >
         <button
           type="button"
-          className="rounded-full border border-white/15 bg-white/5 px-3 py-2 text-[22px] font-black"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg font-bold transition active:scale-95"
           onClick={backToSetup}
         >
-          ←
+          ‹
         </button>
 
-        <div className="truncate text-center text-5xl font-black">Enclose</div>
+        <div className="absolute left-1/2 -translate-x-1/2 text-xl font-extrabold">Enclose</div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={resetMatch}
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-3xl font-bold text-accent"
+            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-base font-bold text-accent transition active:scale-95"
           >
             Новая
           </button>
           <button
             type="button"
             onClick={openRules}
-            className="h-11 w-11 rounded-full border border-white/20 bg-white/5 text-2xl"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/5 text-lg transition active:scale-95"
           >
             ?
           </button>
         </div>
-      </header>
+      </motion.header>
 
-      <div className="mb-3 flex items-center justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.25, delay: 0.05 }}
+        className="mb-1 flex shrink-0 items-center justify-between gap-2"
+      >
         <ScorePill label={`X: ${summary.scoreX}`} active={session.state.currentPlayer === 'x'} accent="x" />
         <ScorePill label={`O: ${summary.scoreO}`} active={session.state.currentPlayer === 'o'} accent="o" />
-      </div>
+      </motion.div>
 
       <motion.div
         key={session.state.currentPlayer}
         initial={{ scale: 0.98, opacity: 0.75 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.18 }}
-        className="mb-3 rounded-full border border-white/10 bg-panel px-4 py-2 text-center text-4xl font-black"
+        className="mb-1 shrink-0 rounded-full border border-white/10 bg-panel px-3 py-1 text-center text-lg sm:text-xl md:text-2xl font-black"
       >
         {aiThinking ? 'ИИ думает…' : `Ход ${session.state.currentPlayer.toUpperCase()}`}
       </motion.div>
 
-      <div className="relative mb-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-[34px] border border-white/10 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 shadow-card">
-        <div className="absolute h-[80%] w-[80%] rounded-full bg-accent/15 blur-3xl" />
-        <BoardSvg
-          session={session}
-          disabled={aiThinking || (setup.mode === 'single' && session.state.currentPlayer === 'o')}
-          showHints={hintsEnabled}
-          onEdgeClick={playMove}
-        />
+      <div
+        ref={boardRef}
+        className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 shadow-card"
+      >
+        <div className="pointer-events-none absolute h-[80%] w-[80%] rounded-full bg-accent/15 blur-3xl" />
+        <div className="relative z-10 flex h-full w-full items-center justify-center">
+          <BoardSvg
+            session={session}
+            disabled={aiThinking || (setup.mode === 'single' && session.state.currentPlayer === 'o')}
+            showHints={hintsEnabled}
+            animationsEnabled={animationsEnabled}
+            onEdgeClick={handleEdgeClick}
+          />
+        </div>
+        <ParticleEffect trigger={particleTrigger} color={particleColor} />
       </div>
 
-      <div className="mb-3 grid grid-cols-3 gap-2">
-        <StatCard label="Линии" value={`${session.state.occupiedEdges.size}/${session.board.edges.length}`} />
-        <StatCard label="Клетки" value={`${summary.scoreX + summary.scoreO}/${session.state.zones.length}`} />
-        <StatCard label="Режим" value={modeLabel} />
+      <div className="mt-2 grid shrink-0 grid-cols-3 gap-2">
+        <StatCard icon="≡" label="Линии" value={`${session.state.occupiedEdges.size}/${session.board.edges.length}`} />
+        <StatCard icon="⊞" label="Клетки" value={`${summary.scoreX + summary.scoreO}/${session.state.zones.length}`} />
+        <StatCard icon="👤" label="Режим" value={modeLabel} />
       </div>
 
-      <div className="mb-2 flex items-center justify-between rounded-2xl border border-white/10 bg-panel/80 px-4 py-2">
+      <div className="mt-2 flex shrink-0 items-center justify-between rounded-2xl border border-white/10 bg-panel/80 px-3 py-1.5">
         <span className="text-white/70">Подсказки захвата</span>
         <button
           type="button"
@@ -109,25 +216,28 @@ export function GameScreen() {
       ) : null}
 
       {rulesOpen ? <RulesOverlay onClose={closeRules} /> : null}
-    </div>
+    </motion.div>
   );
 }
 
 function ScorePill({ label, active, accent }: { label: string; active: boolean; accent: 'x' | 'o' }) {
   const dotClass = accent === 'x' ? 'bg-x' : 'bg-o';
   return (
-    <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-5xl font-black ${active ? 'border-white/30 bg-white/8' : 'border-white/10 bg-panel/70 text-white/65'}`}>
-      <span className={`h-2.5 w-2.5 rounded-full ${dotClass}`} />
+    <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-base font-bold ${active ? 'border-white/30 bg-white/8' : 'border-white/10 bg-panel/70 text-white/65'}`}>
+      <span className={`h-2 w-2 rounded-full ${dotClass}`} />
       <span>{label}</span>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-panel px-3 py-2">
-      <div className="text-[14px] text-white/60">{label}</div>
-      <div className="truncate text-4xl font-black">{value}</div>
+    <div className="rounded-2xl border border-white/10 bg-panel/80 px-2.5 py-1.5">
+      <div className="flex items-center gap-1 text-xs text-white/60">
+        <span>{icon}</span>
+        <span>{label}</span>
+      </div>
+      <div className="truncate text-lg font-bold">{value}</div>
     </div>
   );
 }

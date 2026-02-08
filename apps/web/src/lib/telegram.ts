@@ -24,6 +24,8 @@ export interface TelegramWebApp {
   disableClosingConfirmation(): void;
   HapticFeedback?: {
     impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void;
+    notificationOccurred(type: 'error' | 'success' | 'warning'): void;
+    selectionChanged(): void;
   };
   BackButton?: {
     show(): void;
@@ -55,3 +57,17 @@ export function initTelegramWebApp(): TelegramWebApp | undefined {
   app.expand();
   return app;
 }
+
+// Haptic feedback helpers
+export function hapticImpact(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft' = 'rigid'): void {
+  getTelegramWebApp()?.HapticFeedback?.impactOccurred(style);
+}
+
+export function hapticSelection(): void {
+  getTelegramWebApp()?.HapticFeedback?.selectionChanged();
+}
+
+export function hapticNotification(type: 'success' | 'warning' | 'error'): void {
+  getTelegramWebApp()?.HapticFeedback?.notificationOccurred(type);
+}
+
