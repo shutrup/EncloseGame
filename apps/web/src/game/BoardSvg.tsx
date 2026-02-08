@@ -101,20 +101,36 @@ export function BoardSvg({ session, disabled, showHints, animationsEnabled, onEd
           const edgeLength = Math.hypot(b.x - a.x, b.y - a.y);
           const isInteractive = !occupied && !disabled;
 
+          // Calculate shortened hit line to avoid overlap with perpendicular edges at nodes
+          const shorten = 0.12;
+          const t1 = shorten / edgeLength;
+          const t2 = 1 - t1;
+
+          const h1 = {
+            x: a.x + (b.x - a.x) * t1,
+            y: a.y + (b.y - a.y) * t1
+          };
+          const h2 = {
+            x: a.x + (b.x - a.x) * t2,
+            y: a.y + (b.y - a.y) * t2
+          };
+
           return (
             <g
               key={`edge-${edge.id}`}
               className={isInteractive ? 'group cursor-pointer' : ''}
               onClick={() => isInteractive && onEdgeClick(edge.id)}
             >
-              {/* Hit area - invisible but catchs hover/clicks */}
+              {/* Hit area - shortened to prevent intersection conflict */}
               <line
-                x1={a.x}
-                y1={a.y}
-                x2={b.x}
-                y2={b.y}
-                stroke="transparent"
-                strokeWidth="0.8"
+                x1={h1.x}
+                y1={h1.y}
+                x2={h2.x}
+                y2={h2.y}
+                stroke="white"
+                strokeOpacity="0"
+                strokeWidth="0.65"
+                strokeLinecap="round"
               />
 
               {/* Visual line */}
