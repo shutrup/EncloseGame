@@ -4,6 +4,7 @@ import type { AILevel, BoardPreset } from '@enclose/game-core';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { useGameStore } from '../store/gameStore';
 import { useI18n } from '../store/i18n';
+import { useTelegramBackButton, useTelegramMainButton } from '../hooks/useTelegram';
 
 type GameMode = 'pvp' | 'single';
 
@@ -37,6 +38,9 @@ export function SetupScreen() {
   const { setup, setPreset, setMode, setDifficulty, startGame, backToHome } = useGameStore();
   const { t } = useI18n(); // Using i18n if available, effectively
 
+  useTelegramBackButton(backToHome);
+  useTelegramMainButton('Играть', startGame);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -47,17 +51,9 @@ export function SetupScreen() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-2 shrink-0 flex items-center gap-3"
+        className="mb-2 shrink-0 flex items-center justify-center gap-3 relative"
       >
-        <button
-          type="button"
-          onClick={backToHome}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-xl transition active:scale-95"
-        >
-          ←
-        </button>
         <h1 className="flex-1 text-center text-2xl font-black tracking-tight">Настройка игры</h1>
-        <div className="w-11" />
       </motion.header>
 
       <div className="flex-1 overflow-y-auto py-2">
@@ -99,20 +95,7 @@ export function SetupScreen() {
         </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.25 }}
-        className="mt-auto pt-4 shrink-0"
-      >
-        <button
-          type="button"
-          onClick={startGame}
-          className="w-full rounded-2xl bg-accent px-6 py-4 text-2xl font-bold text-white shadow-glow transition active:scale-[0.98]"
-        >
-          Играть
-        </button>
-      </motion.div>
+
     </motion.div>
   );
 }

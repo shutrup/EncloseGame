@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useI18n, type Locale } from '../store/i18n';
+import { useTelegramBackButton } from '../hooks/useTelegram';
 
 export function SettingsScreen() {
     const {
@@ -15,16 +16,13 @@ export function SettingsScreen() {
 
     const { locale, setLocale, t } = useI18n();
 
+    useTelegramBackButton(closeSettings);
+
+    useTelegramBackButton(closeSettings);
+
     return (
         <div className="flex min-h-dvh flex-col px-4 pb-6 pt-4">
-            <header className="mb-6 flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={closeSettings}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-xl transition active:scale-95"
-                >
-                    ←
-                </button>
+            <header className="mb-6 flex items-center justify-center relative">
                 <h1 className="text-3xl font-black">{t('settings.title')}</h1>
             </header>
 

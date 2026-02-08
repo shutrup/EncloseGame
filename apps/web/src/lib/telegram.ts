@@ -11,28 +11,60 @@ export interface TelegramWebAppInitDataUnsafe {
   query_id?: string;
 }
 
+export interface BackButton {
+  isVisible: boolean;
+  show(): void;
+  hide(): void;
+  onClick(callback: () => void): void;
+  offClick(callback: () => void): void;
+}
+
+export interface MainButton {
+  text: string;
+  color: string;
+  textColor: string;
+  isVisible: boolean;
+  isActive: boolean;
+  isProgressVisible: boolean;
+  setText(text: string): void;
+  onClick(callback: () => void): void;
+  offClick(callback: () => void): void;
+  show(): void;
+  hide(): void;
+  enable(): void;
+  disable(): void;
+  showProgress(leaveActive?: boolean): void;
+  hideProgress(): void;
+  setParams(params: {
+    text?: string;
+    color?: string;
+    text_color?: string;
+    is_active?: boolean;
+    is_visible?: boolean;
+  }): void;
+}
+
+export interface HapticFeedback {
+  impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void;
+  notificationOccurred(type: 'error' | 'success' | 'warning'): void;
+  selectionChanged(): void;
+}
+
 export interface TelegramWebApp {
   initData: string;
   initDataUnsafe: TelegramWebAppInitDataUnsafe;
   colorScheme: 'light' | 'dark';
   viewportHeight: number;
+  viewportStableHeight: number;
   isExpanded: boolean;
+  BackButton: BackButton;
+  MainButton: MainButton;
+  HapticFeedback: HapticFeedback;
   ready(): void;
-  expand(): void;
   close(): void;
+  expand(): void;
   enableClosingConfirmation(): void;
   disableClosingConfirmation(): void;
-  HapticFeedback?: {
-    impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void;
-    notificationOccurred(type: 'error' | 'success' | 'warning'): void;
-    selectionChanged(): void;
-  };
-  BackButton?: {
-    show(): void;
-    hide(): void;
-    onClick(cb: () => void): void;
-    offClick(cb: () => void): void;
-  };
 }
 
 declare global {
