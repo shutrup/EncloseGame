@@ -126,7 +126,7 @@ export function GameScreen() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 mx-auto flex w-full max-w-[900px] flex-col overflow-hidden px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+1.5rem)]"
+      className="fixed inset-0 mx-auto flex w-full max-w-[900px] flex-col overflow-hidden px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+2rem)]"
     >
       <motion.header
         initial={{ opacity: 0, y: -15 }}
