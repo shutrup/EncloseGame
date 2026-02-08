@@ -48,7 +48,7 @@ export function SetupScreen() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mx-auto flex h-dvh w-full max-w-[860px] flex-col overflow-hidden px-4 pb-6 pt-[calc(env(safe-area-inset-top)+1rem)]"
+      className="fixed inset-0 mx-auto flex w-full max-w-[860px] flex-col overflow-hidden px-4 pb-6 pt-[calc(env(safe-area-inset-top)+1rem)]"
     >
       <motion.header
         initial={{ opacity: 0, y: -20 }}

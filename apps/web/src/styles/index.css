@@ -52,9 +52,12 @@
 html,
 body,
 #root {
+  overflow: hidden;
+  /* Force no scroll on body */
+  position: fixed;
+  inset: 0;
+  height: 100%;
   width: 100%;
-  min-height: 100dvh;
-  margin: 0;
   padding: 0;
   font-family: 'Inter', 'SF Pro Display', 'Segoe UI', sans-serif;
   background: #050608;
