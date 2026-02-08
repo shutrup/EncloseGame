@@ -67,7 +67,7 @@ export function SetupScreen() {
         <div className="w-11" />
       </motion.header>
 
-      <div className="flex-1 overflow-y-auto py-2">
+      <div className="flex-1 overflow-y-auto overscroll-none py-2">
         <div className="flex flex-col gap-3">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
