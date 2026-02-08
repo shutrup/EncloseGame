@@ -2,8 +2,11 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useTelegramMainButton } from '../hooks/useTelegram';
 
+import { useI18n } from '../store/i18n';
+
 export function HomeScreen() {
     const { goToSetup, openRules, openSettings } = useGameStore();
+    const { t } = useI18n();
 
     // useTelegramMainButton('Играть', goToSetup);
 
@@ -55,7 +58,7 @@ export function HomeScreen() {
                     onClick={goToSetup}
                     className="w-full rounded-full bg-gradient-to-r from-accent to-sky-500 px-6 py-5 text-2xl font-black text-white shadow-glow transition active:scale-[0.98]"
                 >
-                    Играть
+                    {t('home.play')}
                 </button>
 
 
@@ -65,7 +68,7 @@ export function HomeScreen() {
                     className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-panel px-6 py-4 text-lg font-bold transition active:scale-[0.98]"
                 >
                     <span>📖</span>
-                    <span>Правила</span>
+                    <span>{t('home.rules')}</span>
                 </button>
 
                 <button
@@ -74,7 +77,7 @@ export function HomeScreen() {
                     className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-panel px-6 py-4 text-lg font-bold transition active:scale-[0.98]"
                 >
                     <span>⚙️</span>
-                    <span>Настройки</span>
+                    <span>{t('home.settings')}</span>
                 </button>
             </motion.div>
 

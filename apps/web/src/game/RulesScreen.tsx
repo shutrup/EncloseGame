@@ -1,33 +1,7 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
-import { useTelegramBackButton } from '../hooks/useTelegram';
-
-const rules = [
-    {
-        icon: '📐',
-        iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-400',
-        title: 'Проведи линию',
-        description: 'Соедини любые две соседние точки линией. Линии не могут пересекаться или дублироваться.'
-    },
-    {
-        icon: '⬜',
-        iconBg: 'bg-gradient-to-br from-green-500 to-emerald-400',
-        title: 'Замкни квадрат',
-        description: 'Когда ты рисуешь четвертую сторону квадрата, он становится твоим! Внутри появится твой символ (X или O).'
-    },
-    {
-        icon: '🔄',
-        iconBg: 'bg-gradient-to-br from-purple-500 to-violet-400',
-        title: 'Дополнительный ход',
-        description: 'Если ты захватил квадрат, ты ОБЯЗАН сделать еще один ход. Можно захватывать цепочки квадратов!'
-    },
-    {
-        icon: '🏆',
-        iconBg: 'bg-gradient-to-br from-yellow-500 to-orange-400',
-        title: 'Победа',
-        description: 'Игра заканчивается, когда все линии нарисованы. Побеждает тот, кто захватил больше квадратов.'
-    }
-];
+// import { useTelegramBackButton } from '../hooks/useTelegram';
+import { useI18n } from '../store/i18n';
 
 interface RulesScreenProps {
     fromGame?: boolean;
@@ -35,8 +9,36 @@ interface RulesScreenProps {
 
 export function RulesScreen({ fromGame }: RulesScreenProps) {
     const closeRules = useGameStore((s) => s.closeRules);
+    const { t } = useI18n();
 
     // useTelegramBackButton(closeRules);
+
+    const rules = [
+        {
+            icon: '📐',
+            iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-400',
+            title: t('rules.draw_line'),
+            description: t('rules.draw_line_desc')
+        },
+        {
+            icon: '⬜',
+            iconBg: 'bg-gradient-to-br from-green-500 to-emerald-400',
+            title: t('rules.capture'),
+            description: t('rules.capture_desc')
+        },
+        {
+            icon: '🔄',
+            iconBg: 'bg-gradient-to-br from-purple-500 to-violet-400',
+            title: t('rules.extra'),
+            description: t('rules.extra_desc')
+        },
+        {
+            icon: '🏆',
+            iconBg: 'bg-gradient-to-br from-yellow-500 to-orange-400',
+            title: t('rules.win'),
+            description: t('rules.win_desc')
+        }
+    ];
 
     return (
         <motion.div
@@ -60,7 +62,7 @@ export function RulesScreen({ fromGame }: RulesScreenProps) {
                     >
                         ‹
                     </button>
-                    <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-xl font-bold">Правила</h1>
+                    <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-xl font-bold">{t('rules.title')}</h1>
                     <div className="w-9" />
                 </header>
 

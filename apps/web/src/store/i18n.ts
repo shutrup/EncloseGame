@@ -57,6 +57,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'settings.sound': 'Звук',
         'settings.animations': 'Анимации',
         'settings.language': 'Язык',
+        'settings.feedback': 'Обратная связь',
+        'settings.back': 'Назад',
 
         // GameOver
         'gameover.win': 'победил!',
@@ -116,6 +118,8 @@ const translations: Record<Locale, Record<string, string>> = {
         'settings.sound': 'Sound',
         'settings.animations': 'Animations',
         'settings.language': 'Language',
+        'settings.feedback': 'Feedback',
+        'settings.back': 'Back',
 
         // GameOver
         'gameover.win': 'wins!',

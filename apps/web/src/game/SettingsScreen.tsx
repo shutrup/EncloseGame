@@ -38,7 +38,7 @@ export function SettingsScreen() {
                 className="flex flex-col gap-3"
             >
                 <section className="rounded-3xl border border-white/10 bg-panel p-4">
-                    <h2 className="mb-3 text-lg font-bold text-white/70">Обратная связь</h2>
+                    <h2 className="mb-3 text-lg font-bold text-white/70">{t('settings.feedback')}</h2>
                     <div className="flex flex-col gap-2">
                         <ToggleRow
                             label={t('settings.sound')}
@@ -53,7 +53,7 @@ export function SettingsScreen() {
                             onChange={setAnimationsEnabled}
                         />
                         <ToggleRow
-                            label="Подсказки захвата"
+                            label={t('game.hints')}
                             icon="💡"
                             enabled={hintsEnabled}
                             onChange={setHintsEnabled}

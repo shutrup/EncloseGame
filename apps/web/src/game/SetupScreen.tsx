@@ -60,7 +60,7 @@ export function SetupScreen() {
         >
           ‹
         </button>
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-2xl font-black tracking-tight">Настройка игры</h1>
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-2xl font-black tracking-tight">{t('setup.title')}</h1>
         <div className="w-11" />
       </motion.header>
 
@@ -114,7 +114,7 @@ export function SetupScreen() {
           onClick={startGame}
           className="w-full rounded-xl bg-[#007AFF] px-6 py-3.5 text-xl font-semibold text-white shadow-lg transition active:opacity-80 active:scale-[0.98]"
         >
-          Играть
+          {t('home.play')}
         </button>
       </motion.div>
     </motion.div>

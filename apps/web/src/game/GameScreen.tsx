@@ -5,7 +5,9 @@ import { soundManager } from '../lib/soundManager';
 import { hapticImpact } from '../lib/telegram';
 import { gameSummary, useGameStore } from '../store/gameStore';
 import { BoardSvg } from './BoardSvg';
+// import { BoardSvg } from './BoardSvg';
 // import { useTelegramBackButton } from '../hooks/useTelegram';
+import { useI18n } from '../store/i18n';
 
 export function GameScreen() {
   const {
@@ -23,6 +25,7 @@ export function GameScreen() {
     closeRules,
     rulesOpen
   } = useGameStore();
+  const { t } = useI18n();
 
   // useTelegramBackButton(backToSetup);
 
@@ -111,7 +114,7 @@ export function GameScreen() {
     return null;
   }
 
-  const modeLabel = setup.mode === 'single' ? 'Одиночная' : 'PvP';
+  const modeLabel = setup.mode === 'single' ? t('setup.single') : t('setup.pvp');
 
   return (
     <motion.div
@@ -141,7 +144,7 @@ export function GameScreen() {
             onClick={resetMatch}
             className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-base font-bold text-accent transition active:scale-95"
           >
-            Новая
+            {t('game.new')}
           </button>
           <button
             type="button"
