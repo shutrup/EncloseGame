@@ -232,12 +232,12 @@ function ScorePill({ label, active, accent }: { label: string; active: boolean; 
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-panel/80 px-2.5 py-1.5">
-      <div className="flex items-center gap-1 text-xs text-white/60">
+    <div className="flex flex-col justify-center rounded-2xl border border-white/10 bg-panel/80 px-2 py-1.5 min-w-0">
+      <div className="flex items-center gap-1 text-[11px] text-white/50 mb-0.5">
         <span>{icon}</span>
         <span>{label}</span>
       </div>
-      <div className="truncate text-lg font-bold">{value}</div>
+      <div className="truncate text-base font-bold leading-tight tracking-tight">{value}</div>
     </div>
   );
 }
