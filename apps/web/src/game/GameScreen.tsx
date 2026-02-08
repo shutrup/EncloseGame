@@ -26,9 +26,8 @@ export function GameScreen() {
     rulesOpen
   } = useGameStore();
   const { t } = useI18n();
-  const [selectedEdge, setSelectedEdge] = useState<number | null>(null);
 
-  useTelegramBackButton(backToSetup);
+  // useTelegramBackButton(backToSetup);
 
   const [particleTrigger, setParticleTrigger] = useState<{ x: number; y: number } | null>(null);
   const [particleColor, setParticleColor] = useState('#1690ff');
@@ -109,26 +108,13 @@ export function GameScreen() {
       // If AI is thinking, ignore clicks
       if (aiThinking) return;
 
-      // Double tap logic:
-      // 1. If edge is already selected -> Play Move
-      if (selectedEdge === edgeId) {
-        playMove(edgeId);
-        setSelectedEdge(null);
-        hapticImpact('heavy');
-      } else {
-        // 2. Otherwise -> Select Edge
-        setSelectedEdge(edgeId);
-        hapticImpact('light');
-        soundManager.play('pop'); // Optional feedback for selection
-      }
+      playMove(edgeId);
+      hapticImpact('light');
     },
-    [aiThinking, playMove, selectedEdge]
+    [aiThinking, playMove]
   );
 
-  // Clear selection if turn changes or game ends
-  useEffect(() => {
-    setSelectedEdge(null);
-  }, [session?.state.currentPlayer, summary?.isOver]);
+
 
   if (!session || !summary) {
     return null;
@@ -150,7 +136,7 @@ export function GameScreen() {
       >
         <button
           type="button"
-          className="hidden" // Hiding custom button
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg font-bold transition active:scale-95"
           onClick={backToSetup}
         >
           ‹
@@ -208,7 +194,7 @@ export function GameScreen() {
             showHints={hintsEnabled}
             animationsEnabled={animationsEnabled}
             onEdgeClick={handleEdgeClick}
-            selectedEdge={selectedEdge}
+          // selectedEdge={selectedEdge}
           />
         </div>
         <ParticleEffect trigger={particleTrigger} color={particleColor} />

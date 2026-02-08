@@ -23,7 +23,7 @@ export function SetupScreen() {
   const { setup, setPreset, setMode, setDifficulty, startGame, backToHome } = useGameStore();
   const { t } = useI18n();
 
-  useTelegramBackButton(backToHome);
+  // useTelegramBackButton(backToHome);
   // useTelegramMainButton('Играть', startGame);
 
   const presetOptions: { value: BoardPreset; label: string }[] = [
@@ -58,7 +58,7 @@ export function SetupScreen() {
         <button
           type="button"
           onClick={backToHome}
-          className="hidden" // Hiding custom button to rely on native back button
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-2xl text-white transition active:bg-white/10"
         >
           ‹
         </button>
