@@ -18,8 +18,6 @@ export function SettingsScreen() {
 
     useTelegramBackButton(closeSettings);
 
-    useTelegramBackButton(closeSettings);
-
     return (
         <div className="flex min-h-dvh flex-col px-4 pb-6 pt-4">
             <header className="mb-6 flex items-center justify-center relative">
