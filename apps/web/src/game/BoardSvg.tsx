@@ -209,7 +209,8 @@ export function BoardSvg({ session, disabled, showHints, animationsEnabled, onEd
                 fontSize={0.85}
                 fontWeight={900}
                 textAnchor="middle"
-                dominantBaseline="central"
+                dominantBaseline="middle"
+                dy="0.08em"
                 style={{ userSelect: 'none', paintOrder: 'stroke', stroke: 'rgba(5, 8, 12, 0.6)', strokeWidth: 0.04 }}
               >
                 {owner}
