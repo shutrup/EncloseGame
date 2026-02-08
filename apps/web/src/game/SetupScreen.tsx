@@ -48,7 +48,7 @@ export function SetupScreen() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 mx-auto flex w-full max-w-[860px] flex-col overflow-hidden px-4 pb-6 pt-[calc(env(safe-area-inset-top)+2.5rem)]"
+      className="fixed inset-0 mx-auto flex w-full max-w-[860px] flex-col overflow-hidden px-4 pb-6 pt-[calc(env(safe-area-inset-top)+3rem)]"
     >
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -61,7 +61,9 @@ export function SetupScreen() {
           onClick={backToHome}
           className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-2xl text-white transition active:bg-white/10"
         >
-          ‹
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
         <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-2xl font-black tracking-tight">{t('setup.title')}</h1>
         <div className="w-11" />
