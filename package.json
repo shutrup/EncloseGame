@@ -17,6 +17,7 @@
     "typecheck": "npm run typecheck:web && npm run typecheck:api && npm run typecheck:core",
     "typecheck:web": "npm --workspace @enclose/web run typecheck",
     "typecheck:api": "npm --workspace @enclose/api run typecheck",
-    "typecheck:core": "npm --workspace @enclose/game-core run typecheck"
+    "typecheck:core": "npm --workspace @enclose/game-core run typecheck",
+    "train:ai": "cd ai-trainer && python3 train.py && cp weights.json ../packages/game-core/src/data/weights.json && echo 'Successfully trained and updated game weights!'"
   }
 }
