@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { getTelegramWebApp } from '../lib/telegram';
 
-const tg = getTelegramWebApp();
-
 export function useTelegramBackButton(onClick: () => void) {
     useEffect(() => {
+        const tg = getTelegramWebApp();
         if (!tg) return;
         tg.BackButton.show();
         tg.BackButton.onClick(onClick);
@@ -23,6 +22,7 @@ export function useTelegramMainButton(
     isActive = true
 ) {
     useEffect(() => {
+        const tg = getTelegramWebApp();
         if (!tg) return;
 
         // Set color to match app accent
@@ -34,6 +34,10 @@ export function useTelegramMainButton(
             is_visible: isVisible
         });
 
+        // Explicit show just in case setParams doesn't trigger it immediately on some clients
+        if (isVisible) tg.MainButton.show();
+        else tg.MainButton.hide();
+
         tg.MainButton.onClick(onClick);
 
         return () => {
@@ -44,6 +48,7 @@ export function useTelegramMainButton(
 }
 
 export function useTelegram() {
+    const tg = getTelegramWebApp();
     return {
         tg,
         user: tg?.initDataUnsafe?.user,
