@@ -16,10 +16,7 @@ interface AiMoveResponse {
 
 function getApiBaseUrl(): string {
   const env = import.meta.env as Record<string, string | undefined>;
-  const base = env.VITE_API_BASE_URL?.trim();
-  if (!base) {
-    return '';
-  }
+  const base = env.VITE_API_BASE_URL?.trim() || 'https://encloseapi-production.up.railway.app';
   return base.endsWith('/') ? base.slice(0, -1) : base;
 }
 
