@@ -7,6 +7,8 @@ export function bestMove(board: BoardLayout, state: GameState, level: AILevel): 
     return undefined;
   }
 
+  const edgeZones = buildEdgeZoneMap(board);
+
   switch (level) {
     case 'easy': {
       if (Math.random() < 0.22) {
@@ -18,15 +20,15 @@ export function bestMove(board: BoardLayout, state: GameState, level: AILevel): 
         return capture;
       }
 
-      const safe = findSafeEdges(board, state, available);
+      const safe = findSafeEdges(board, state, available, edgeZones);
       return randomFrom(safe) ?? randomFrom(available);
     }
 
     case 'medium':
-      return solveHeuristic(board, state, available);
+      return solveHeuristic(board, state, available, edgeZones);
 
     case 'hard':
-      return solveMinimax(board, state, available);
+      return solveMinimax(board, state, available, edgeZones);
 
     default:
       return randomFrom(available);
@@ -60,12 +62,17 @@ function findCapturingEdge(state: GameState, available: number[]): number | unde
   return undefined;
 }
 
-function findSafeEdges(board: BoardLayout, state: GameState, available: number[]): number[] {
-  return available.filter((edgeId) => isSafe(edgeId, board, state));
+function findSafeEdges(
+  board: BoardLayout,
+  state: GameState,
+  available: number[],
+  edgeZones: Map<number, number[]>
+): number[] {
+  return available.filter((edgeId) => isSafe(edgeId, board, state, edgeZones));
 }
 
-function isSafe(edgeId: number, board: BoardLayout, state: GameState): boolean {
-  const affectedZones = affectedZonesForEdge(edgeId, board);
+function isSafe(edgeId: number, board: BoardLayout, state: GameState, edgeZones: Map<number, number[]>): boolean {
+  const affectedZones = affectedZonesForEdge(edgeId, board, edgeZones);
   for (const zone of affectedZones) {
     const occupied = zone.edgeIds.filter((zoneEdge) => state.occupiedEdges.has(zoneEdge)).length;
     if (occupied === 2) {
@@ -75,18 +82,19 @@ function isSafe(edgeId: number, board: BoardLayout, state: GameState): boolean {
   return true;
 }
 
-function solveHeuristic(board: BoardLayout, state: GameState, available: number[]): number {
-  const moves = sortMoves(available, board, state);
+function solveHeuristic(board: BoardLayout, state: GameState, available: number[], edgeZones: Map<number, number[]>): number {
+  const moves = sortMoves(available, board, state, edgeZones);
   let best = moves[0];
   let bestScore = Number.NEGATIVE_INFINITY;
 
   for (const edgeId of moves) {
-    const metrics = getMoveMetrics(edgeId, board, state);
+    const metrics = getMoveMetrics(edgeId, board, state, edgeZones);
     let score = 0;
     score += metrics.captures * 160;
     score += metrics.createsSecond * 8;
     score -= metrics.createsThird * 125;
-    score += isSafe(edgeId, board, state) ? 22 : 0;
+    score += isSafe(edgeId, board, state, edgeZones) ? 22 : 0;
+    score -= metrics.givesCaptures * 130;
     score += centerWeight(edgeId, board) * 6;
 
     if (score > bestScore) {
@@ -98,23 +106,24 @@ function solveHeuristic(board: BoardLayout, state: GameState, available: number[
   return best;
 }
 
-function solveMinimax(board: BoardLayout, state: GameState, available: number[]): number {
+function solveMinimax(board: BoardLayout, state: GameState, available: number[], edgeZones: Map<number, number[]>): number {
   const emptyCount = available.length;
-  const maxDepth = emptyCount <= 12 ? 9 : emptyCount <= 20 ? 5 : 3;
+  const maxDepth = emptyCount <= 8 ? 13 : emptyCount <= 14 ? 10 : emptyCount <= 20 ? 7 : 5;
 
   let bestScore = Number.NEGATIVE_INFINITY;
   let bestMove = available[0];
   let alpha = Number.NEGATIVE_INFINITY;
   const beta = Number.POSITIVE_INFINITY;
 
-  const sortedMoves = sortMoves(available, board, state);
+  const sortedMoves = sortMoves(available, board, state, edgeZones);
+  const cache = new Map<string, number>();
 
   for (const move of sortedMoves) {
     const { state: nextState, extraTurn } = simulate(move, state, board);
 
     const score = extraTurn
-      ? minimax(nextState, maxDepth, alpha, beta, true, board)
-      : minimax(nextState, maxDepth - 1, alpha, beta, false, board);
+      ? minimax(nextState, maxDepth, alpha, beta, true, board, edgeZones, cache)
+      : minimax(nextState, maxDepth - 1, alpha, beta, false, board, edgeZones, cache);
 
     if (score > bestScore) {
       bestScore = score;
@@ -133,18 +142,26 @@ function minimax(
   alphaInput: number,
   betaInput: number,
   maximizingPlayer: boolean,
-  board: BoardLayout
+  board: BoardLayout,
+  edgeZones: Map<number, number[]>,
+  cache: Map<string, number>
 ): number {
   if (depth <= 0 || state.occupiedEdges.size === board.edges.length) {
-    return evaluate(state);
+    return evaluate(state, board, edgeZones);
+  }
+
+  const stateKey = cacheKey(state, depth, maximizingPlayer);
+  const cached = cache.get(stateKey);
+  if (cached !== undefined) {
+    return cached;
   }
 
   const available = board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
   if (available.length === 0) {
-    return evaluate(state);
+    return evaluate(state, board, edgeZones);
   }
 
-  const moves = sortMoves(available, board, state);
+  const moves = sortMoves(available, board, state, edgeZones);
   let alpha = alphaInput;
   let beta = betaInput;
 
@@ -155,8 +172,8 @@ function minimax(
       const { state: nextState, extraTurn } = simulate(move, state, board);
 
       const evalScore = extraTurn
-        ? minimax(nextState, depth, alpha, beta, true, board)
-        : minimax(nextState, depth - 1, alpha, beta, false, board);
+        ? minimax(nextState, depth, alpha, beta, true, board, edgeZones, cache)
+        : minimax(nextState, depth - 1, alpha, beta, false, board, edgeZones, cache);
 
       maxEval = Math.max(maxEval, evalScore);
       alpha = Math.max(alpha, evalScore);
@@ -165,6 +182,7 @@ function minimax(
       }
     }
 
+    cache.set(stateKey, maxEval);
     return maxEval;
   }
 
@@ -173,8 +191,8 @@ function minimax(
     const { state: nextState, extraTurn } = simulate(move, state, board);
 
     const evalScore = extraTurn
-      ? minimax(nextState, depth, alpha, beta, false, board)
-      : minimax(nextState, depth - 1, alpha, beta, true, board);
+      ? minimax(nextState, depth, alpha, beta, false, board, edgeZones, cache)
+      : minimax(nextState, depth - 1, alpha, beta, true, board, edgeZones, cache);
 
     minEval = Math.min(minEval, evalScore);
     beta = Math.min(beta, evalScore);
@@ -183,10 +201,11 @@ function minimax(
     }
   }
 
+  cache.set(stateKey, minEval);
   return minEval;
 }
 
-function evaluate(state: GameState): number {
+function evaluate(state: GameState, board: BoardLayout, edgeZones: Map<number, number[]>): number {
   const scores = getScores(state);
   const scoreDiff = (scores.o - scores.x) * 100;
 
@@ -206,7 +225,15 @@ function evaluate(state: GameState): number {
   }
 
   const turnFactor = state.currentPlayer === 'o' ? 1 : -1;
-  return scoreDiff + nearCaptures * 24 * turnFactor - unstableZones * 7;
+
+  const available = board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
+  let opponentCaptureThreat = 0;
+  for (const edgeId of available) {
+    const metrics = getMoveMetrics(edgeId, board, state, edgeZones);
+    opponentCaptureThreat += metrics.captures;
+  }
+
+  return scoreDiff + nearCaptures * 24 * turnFactor - unstableZones * 7 - opponentCaptureThreat * 16;
 }
 
 function simulate(move: number, state: GameState, board: BoardLayout): { state: GameState; extraTurn: boolean } {
@@ -239,45 +266,32 @@ function simulate(move: number, state: GameState, board: BoardLayout): { state: 
   return { state: nextState, extraTurn: captured };
 }
 
-function sortMoves(moves: number[], board: BoardLayout, state: GameState): number[] {
-  return [...moves].sort((a, b) => moveScore(b, board, state) - moveScore(a, board, state));
+function sortMoves(moves: number[], board: BoardLayout, state: GameState, edgeZones: Map<number, number[]>): number[] {
+  return [...moves].sort((a, b) => moveScore(b, board, state, edgeZones) - moveScore(a, board, state, edgeZones));
 }
 
-function moveScore(edgeId: number, board: BoardLayout, state: GameState): number {
-  const metrics = getMoveMetrics(edgeId, board, state);
+function moveScore(edgeId: number, board: BoardLayout, state: GameState, edgeZones: Map<number, number[]>): number {
+  const metrics = getMoveMetrics(edgeId, board, state, edgeZones);
   let score = 0;
   score += metrics.captures * 100;
-  score += isSafe(edgeId, board, state) ? 40 : 0;
+  score += isSafe(edgeId, board, state, edgeZones) ? 40 : 0;
   score -= metrics.createsThird * 50;
+  score -= metrics.givesCaptures * 70;
   score += metrics.createsSecond * 4;
   return score + centerWeight(edgeId, board) * 3;
 }
 
-function captures(edgeId: number, board: BoardLayout, state: GameState): boolean {
-  for (const zone of affectedZonesForEdge(edgeId, board)) {
-    if (zone.owner !== 'none' || !zone.edgeIds.includes(edgeId)) {
-      continue;
-    }
-
-    const occupied = zone.edgeIds.filter((zoneEdgeId) => state.occupiedEdges.has(zoneEdgeId)).length;
-    if (occupied === 3) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function getMoveMetrics(edgeId: number, board: BoardLayout, state: GameState): {
+function getMoveMetrics(edgeId: number, board: BoardLayout, state: GameState, edgeZones: Map<number, number[]>): {
   captures: number;
   createsThird: number;
   createsSecond: number;
+  givesCaptures: number;
 } {
   let captures = 0;
   let createsThird = 0;
   let createsSecond = 0;
 
-  for (const zone of affectedZonesForEdge(edgeId, board)) {
+  for (const zone of affectedZonesForEdge(edgeId, board, edgeZones)) {
     if (zone.owner !== 'none') {
       continue;
     }
@@ -292,7 +306,24 @@ function getMoveMetrics(edgeId: number, board: BoardLayout, state: GameState): {
     }
   }
 
-  return { captures, createsThird, createsSecond };
+  const simulated = simulate(edgeId, state, board).state;
+  const available = board.edges.map((edge) => edge.id).filter((candidate) => !simulated.occupiedEdges.has(candidate));
+  let givesCaptures = 0;
+
+  for (const candidate of available) {
+    for (const zone of affectedZonesForEdge(candidate, board, edgeZones)) {
+      if (zone.owner !== 'none') {
+        continue;
+      }
+
+      const occupied = zone.edgeIds.filter((zoneEdgeId) => simulated.occupiedEdges.has(zoneEdgeId)).length;
+      if (occupied === 3) {
+        givesCaptures += 1;
+      }
+    }
+  }
+
+  return { captures, createsThird, createsSecond, givesCaptures };
 }
 
 function centerWeight(edgeId: number, board: BoardLayout): number {
@@ -310,6 +341,30 @@ function centerWeight(edgeId: number, board: BoardLayout): number {
   return Math.max(0, 1 - dist / 10);
 }
 
-function affectedZonesForEdge(edgeId: number, board: BoardLayout) {
-  return board.zones.filter((zone) => zone.edgeIds.includes(edgeId));
+function affectedZonesForEdge(edgeId: number, board: BoardLayout, edgeZones: Map<number, number[]>) {
+  const zoneIndexes = edgeZones.get(edgeId) ?? [];
+  return zoneIndexes.map((zoneIndex) => board.zones[zoneIndex]);
+}
+
+function buildEdgeZoneMap(board: BoardLayout): Map<number, number[]> {
+  const edgeZones = new Map<number, number[]>();
+
+  for (let zoneIndex = 0; zoneIndex < board.zones.length; zoneIndex += 1) {
+    const zone = board.zones[zoneIndex];
+    for (const edgeId of zone.edgeIds) {
+      const affected = edgeZones.get(edgeId);
+      if (affected) {
+        affected.push(zoneIndex);
+      } else {
+        edgeZones.set(edgeId, [zoneIndex]);
+      }
+    }
+  }
+
+  return edgeZones;
+}
+
+function cacheKey(state: GameState, depth: number, maximizingPlayer: boolean): string {
+  const edges = [...state.occupiedEdges].sort((a, b) => a - b).join(',');
+  return `${depth}:${maximizingPlayer ? '1' : '0'}:${state.currentPlayer}:${edges}`;
 }
