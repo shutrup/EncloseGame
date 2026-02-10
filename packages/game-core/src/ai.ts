@@ -82,10 +82,14 @@ function solveHeuristic(board: BoardLayout, state: GameState, available: number[
 
   for (const edgeId of moves) {
     const metrics = getMoveMetrics(edgeId, board, state);
+    const pressure = opponentPressure(edgeId, board, state);
     let score = 0;
     score += metrics.captures * 160;
     score += metrics.createsSecond * 8;
     score -= metrics.createsThird * 125;
+    score -= pressure.immediateCaptures * 95;
+    score -= pressure.openThirds * 18;
+    score += pressure.safeReplyCount * 4;
     score += isSafe(edgeId, board, state) ? 22 : 0;
     score += centerWeight(edgeId, board) * 6;
 
@@ -96,6 +100,31 @@ function solveHeuristic(board: BoardLayout, state: GameState, available: number[
   }
 
   return best;
+}
+
+
+function opponentPressure(
+  edgeId: number,
+  board: BoardLayout,
+  state: GameState
+): { immediateCaptures: number; openThirds: number; safeReplyCount: number } {
+  const { state: nextState } = simulate(edgeId, state, board);
+  const replies = board.edges.map((edge) => edge.id).filter((replyEdge) => !nextState.occupiedEdges.has(replyEdge));
+
+  let immediateCaptures = 0;
+  let openThirds = 0;
+  let safeReplyCount = 0;
+
+  for (const reply of replies) {
+    const metrics = getMoveMetrics(reply, board, nextState);
+    immediateCaptures += metrics.captures;
+    openThirds += metrics.createsThird;
+    if (isSafe(reply, board, nextState)) {
+      safeReplyCount += 1;
+    }
+  }
+
+  return { immediateCaptures, openThirds, safeReplyCount };
 }
 
 function solveMinimax(board: BoardLayout, state: GameState, available: number[]): number {
@@ -136,12 +165,12 @@ function minimax(
   board: BoardLayout
 ): number {
   if (depth <= 0 || state.occupiedEdges.size === board.edges.length) {
-    return evaluate(state);
+    return evaluate(state, board);
   }
 
   const available = board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
   if (available.length === 0) {
-    return evaluate(state);
+    return evaluate(state, board);
   }
 
   const moves = sortMoves(available, board, state);
@@ -186,12 +215,13 @@ function minimax(
   return minEval;
 }
 
-function evaluate(state: GameState): number {
+function evaluate(state: GameState, board: BoardLayout): number {
   const scores = getScores(state);
   const scoreDiff = (scores.o - scores.x) * 100;
 
   let nearCaptures = 0;
   let unstableZones = 0;
+  let controlledZones = 0;
   for (const zone of state.zones) {
     if (zone.owner !== 'none') {
       continue;
@@ -202,11 +232,29 @@ function evaluate(state: GameState): number {
       nearCaptures += 1;
     } else if (occupied === 2) {
       unstableZones += 1;
+    } else if (occupied <= 1) {
+      controlledZones += 1;
     }
   }
 
+  const safeMoves = countSafeMoves(state, board);
   const turnFactor = state.currentPlayer === 'o' ? 1 : -1;
-  return scoreDiff + nearCaptures * 24 * turnFactor - unstableZones * 7;
+  return scoreDiff + nearCaptures * 24 * turnFactor - unstableZones * 9 + controlledZones * 2 + safeMoves * 5 * turnFactor;
+}
+
+function countSafeMoves(state: GameState, board: BoardLayout): number {
+  let safe = 0;
+  for (const edge of board.edges) {
+    if (state.occupiedEdges.has(edge.id)) {
+      continue;
+    }
+
+    if (isSafe(edge.id, board, state)) {
+      safe += 1;
+    }
+  }
+
+  return safe;
 }
 
 function simulate(move: number, state: GameState, board: BoardLayout): { state: GameState; extraTurn: boolean } {
