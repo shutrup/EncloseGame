@@ -37,8 +37,7 @@ export function SetupScreen() {
   const difficultyOptions: { value: AILevel; label: string }[] = [
     { value: 'easy', label: t('setup.easy') },
     { value: 'medium', label: t('setup.medium') },
-    { value: 'hard', label: t('setup.hard') },
-    { value: 'learning', label: t('setup.learning') }
+    { value: 'hard', label: t('setup.hard') }
   ];
 
   return (

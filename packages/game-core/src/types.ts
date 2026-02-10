@@ -2,7 +2,7 @@ export type Player = 'x' | 'o';
 export type ZoneOwner = 'none' | Player;
 
 export type BoardPreset = 'mini' | 'standard' | 'large';
-export type AILevel = 'easy' | 'medium' | 'hard' | 'learning';
+export type AILevel = 'easy' | 'medium' | 'hard';
 
 export interface Node {
   id: number;
@@ -56,7 +56,7 @@ export const BOARD_PRESET_ROWS: Record<BoardPreset, number[]> = {
   large: [1, 3, 5, 7, 9, 7, 5, 3, 1]
 };
 
-export const AI_LEVELS: AILevel[] = ['easy', 'medium', 'hard', 'learning'];
+export const AI_LEVELS: AILevel[] = ['easy', 'medium', 'hard'];
 
 export function nextPlayer(player: Player): Player {
   return player === 'x' ? 'o' : 'x';
