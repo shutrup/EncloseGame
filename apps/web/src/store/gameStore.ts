@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { requestAIMove } from '../lib/aiApi';
 import {
   type AILevel,
   type BoardPreset,
@@ -80,26 +81,38 @@ function scheduleAIMove(set: (update: Partial<GameStore>) => void, get: () => Ga
   set({ aiThinking: true });
 
   aiTimer = setTimeout(() => {
-    const current = get();
-    if (!current.session) {
-      set({ aiThinking: false });
-      return;
-    }
+    void (async () => {
+      const snapshot = get();
+      if (!snapshot.session) {
+        set({ aiThinking: false });
+        return;
+      }
 
-    const move = computeAIMove(current.session, current.setup.difficulty);
-    if (move === undefined) {
-      set({ aiThinking: false });
-      return;
-    }
+      const targetSession = snapshot.session;
+      const difficulty = snapshot.setup.difficulty;
+      const apiMove = await requestAIMove(targetSession, difficulty);
 
-    const result = playEdge(current.session, move);
-    const nextSession = result.session;
+      const current = get();
+      if (!current.session || current.session !== targetSession) {
+        set({ aiThinking: false });
+        return;
+      }
 
-    set({ session: nextSession, aiThinking: false });
+      const move = apiMove ?? computeAIMove(current.session, difficulty);
+      if (move === undefined) {
+        set({ aiThinking: false });
+        return;
+      }
 
-    if (shouldAiPlay(nextSession, current.setup.mode)) {
-      scheduleAIMove(set, get);
-    }
+      const result = playEdge(current.session, move);
+      const nextSession = result.session;
+
+      set({ session: nextSession, aiThinking: false });
+
+      if (shouldAiPlay(nextSession, current.setup.mode)) {
+        scheduleAIMove(set, get);
+      }
+    })();
   }, 560);
 }
 
