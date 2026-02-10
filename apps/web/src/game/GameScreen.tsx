@@ -27,7 +27,7 @@ export function GameScreen() {
   } = useGameStore();
   const { t } = useI18n();
 
-  // useTelegramBackButton(backToSetup);
+  useTelegramBackButton(backToSetup, !rulesOpen);
 
   const [particleTrigger, setParticleTrigger] = useState<{ x: number; y: number } | null>(null);
   const [particleColor, setParticleColor] = useState('#1690ff');

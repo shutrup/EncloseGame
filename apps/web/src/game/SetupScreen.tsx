@@ -23,7 +23,7 @@ export function SetupScreen() {
   const { setup, setPreset, setMode, setDifficulty, startGame, backToHome } = useGameStore();
   const { t } = useI18n();
 
-  // useTelegramBackButton(backToHome);
+  useTelegramBackButton(backToHome);
   // useTelegramMainButton('Играть', startGame);
 
   const presetOptions: { value: BoardPreset; label: string }[] = [
@@ -125,4 +125,3 @@ export function SetupScreen() {
     </motion.div>
   );
 }
-

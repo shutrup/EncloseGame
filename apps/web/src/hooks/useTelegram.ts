@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { getTelegramWebApp } from '../lib/telegram';
 
-export function useTelegramBackButton(onClick: () => void) {
+export function useTelegramBackButton(onClick: () => void, enabled = true) {
     useEffect(() => {
+        if (!enabled) return;
         const tg = getTelegramWebApp();
-        if (!tg) return;
+        if (!tg || !tg.BackButton) return;
         tg.BackButton.show();
         tg.BackButton.onClick(onClick);
 
@@ -12,7 +13,7 @@ export function useTelegramBackButton(onClick: () => void) {
             tg.BackButton.offClick(onClick);
             tg.BackButton.hide();
         };
-    }, [onClick]);
+    }, [onClick, enabled]);
 }
 
 export function useTelegramMainButton(

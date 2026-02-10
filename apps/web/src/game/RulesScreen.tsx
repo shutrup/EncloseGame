@@ -11,7 +11,7 @@ export function RulesScreen({ fromGame }: RulesScreenProps) {
     const closeRules = useGameStore((s) => s.closeRules);
     const { t } = useI18n();
 
-    // useTelegramBackButton(closeRules);
+    useTelegramBackButton(closeRules);
 
     const rules = [
         {
