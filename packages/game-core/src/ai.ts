@@ -1,5 +1,23 @@
 import { cloneState, getScores } from './state';
-import { nextPlayer, type AILevel, type BoardLayout, type GameState } from './types';
+import { getBoardBounds } from './board';
+import { nextPlayer, type AILevel, type BoardLayout, type GameState, type Zone } from './types';
+
+interface AiContext {
+  board: BoardLayout;
+  edgeZones: Map<number, Zone[]>;
+  centerCache: Map<number, number>;
+  centerX: number;
+  centerY: number;
+  maxDist: number;
+}
+
+interface MoveMetrics {
+  captures: number;
+  createsThird: number;
+  createsSecond: number;
+}
+
+const HARD_TIE_THRESHOLD = 0.0001;
 
 export function bestMove(board: BoardLayout, state: GameState, level: AILevel): number | undefined {
   const available = board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
@@ -7,30 +25,63 @@ export function bestMove(board: BoardLayout, state: GameState, level: AILevel): 
     return undefined;
   }
 
+  const context = buildContext(board);
+
   switch (level) {
     case 'easy': {
       if (Math.random() < 0.22) {
         return randomFrom(available);
       }
 
-      const capture = findCapturingEdge(state, available);
+      const capture = findCapturingEdge(state, available, context);
       if (capture !== undefined) {
         return capture;
       }
 
-      const safe = findSafeEdges(board, state, available);
+      const safe = findSafeEdges(state, available, context);
       return randomFrom(safe) ?? randomFrom(available);
     }
 
     case 'medium':
-      return solveHeuristic(board, state, available);
+      return solveHeuristic(state, available, context);
 
     case 'hard':
-      return solveMinimax(board, state, available);
+      return solveMinimax(state, available, context);
 
     default:
       return randomFrom(available);
   }
+}
+
+function buildContext(board: BoardLayout): AiContext {
+  const edgeZones = new Map<number, Zone[]>();
+  for (const zone of board.zones) {
+    for (const edgeId of zone.edgeIds) {
+      const zones = edgeZones.get(edgeId);
+      if (zones) {
+        zones.push(zone);
+      } else {
+        edgeZones.set(edgeId, [zone]);
+      }
+    }
+  }
+
+  const bounds = getBoardBounds(board);
+  const centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerY = (bounds.minY + bounds.maxY) / 2;
+  const maxDist = Math.max(
+    0.0001,
+    Math.hypot(bounds.maxX - centerX, bounds.maxY - centerY)
+  );
+
+  return {
+    board,
+    edgeZones,
+    centerCache: new Map<number, number>(),
+    centerX,
+    centerY,
+    maxDist
+  };
 }
 
 function randomFrom(values: number[]): number | undefined {
@@ -40,32 +91,23 @@ function randomFrom(values: number[]): number | undefined {
   return values[Math.floor(Math.random() * values.length)];
 }
 
-function findCapturingEdge(state: GameState, available: number[]): number | undefined {
-  for (const zone of state.zones) {
-    if (zone.owner !== 'none') {
-      continue;
-    }
-
-    const occupiedCount = zone.edgeIds.filter((edgeId) => state.occupiedEdges.has(edgeId)).length;
-    if (occupiedCount !== 3) {
-      continue;
-    }
-
-    const missing = zone.edgeIds.find((edgeId) => !state.occupiedEdges.has(edgeId));
-    if (missing !== undefined && available.includes(missing)) {
-      return missing;
+function findCapturingEdge(state: GameState, available: number[], context: AiContext): number | undefined {
+  for (const edgeId of available) {
+    const metrics = getMoveMetrics(edgeId, state, context);
+    if (metrics.captures > 0) {
+      return edgeId;
     }
   }
 
   return undefined;
 }
 
-function findSafeEdges(board: BoardLayout, state: GameState, available: number[]): number[] {
-  return available.filter((edgeId) => isSafe(edgeId, board, state));
+function findSafeEdges(state: GameState, available: number[], context: AiContext): number[] {
+  return available.filter((edgeId) => isSafe(edgeId, state, context));
 }
 
-function isSafe(edgeId: number, board: BoardLayout, state: GameState): boolean {
-  const affectedZones = affectedZonesForEdge(edgeId, board);
+function isSafe(edgeId: number, state: GameState, context: AiContext): boolean {
+  const affectedZones = affectedZonesForEdge(edgeId, context);
   for (const zone of affectedZones) {
     const occupied = zone.edgeIds.filter((zoneEdge) => state.occupiedEdges.has(zoneEdge)).length;
     if (occupied === 2) {
@@ -75,19 +117,19 @@ function isSafe(edgeId: number, board: BoardLayout, state: GameState): boolean {
   return true;
 }
 
-function solveHeuristic(board: BoardLayout, state: GameState, available: number[]): number {
-  const moves = sortMoves(available, board, state);
+function solveHeuristic(state: GameState, available: number[], context: AiContext): number {
+  const moves = sortMoves(available, state, context);
   let best = moves[0];
   let bestScore = Number.NEGATIVE_INFINITY;
 
   for (const edgeId of moves) {
-    const metrics = getMoveMetrics(edgeId, board, state);
+    const metrics = getMoveMetrics(edgeId, state, context);
     let score = 0;
-    score += metrics.captures * 160;
-    score += metrics.createsSecond * 8;
-    score -= metrics.createsThird * 125;
-    score += isSafe(edgeId, board, state) ? 22 : 0;
-    score += centerWeight(edgeId, board) * 6;
+    score += metrics.captures * 170;
+    score += metrics.createsSecond * 7;
+    score -= metrics.createsThird * 135;
+    score += isSafe(edgeId, state, context) ? 22 : 0;
+    score += centerWeight(edgeId, context) * 8;
 
     if (score > bestScore) {
       bestScore = score;
@@ -98,33 +140,36 @@ function solveHeuristic(board: BoardLayout, state: GameState, available: number[
   return best;
 }
 
-function solveMinimax(board: BoardLayout, state: GameState, available: number[]): number {
+function solveMinimax(state: GameState, available: number[], context: AiContext): number {
   const emptyCount = available.length;
-  const maxDepth = emptyCount <= 12 ? 9 : emptyCount <= 20 ? 5 : 3;
+  const maxDepth = emptyCount <= 10 ? 11 : emptyCount <= 18 ? 7 : 5;
+  const transposition = new Map<string, number>();
 
   let bestScore = Number.NEGATIVE_INFINITY;
-  let bestMove = available[0];
+  let bestMoves: number[] = [available[0]];
   let alpha = Number.NEGATIVE_INFINITY;
   const beta = Number.POSITIVE_INFINITY;
 
-  const sortedMoves = sortMoves(available, board, state);
+  const sortedMoves = sortMoves(available, state, context);
 
   for (const move of sortedMoves) {
-    const { state: nextState, extraTurn } = simulate(move, state, board);
+    const { state: nextState, extraTurn } = simulate(move, state, context);
 
     const score = extraTurn
-      ? minimax(nextState, maxDepth, alpha, beta, true, board)
-      : minimax(nextState, maxDepth - 1, alpha, beta, false, board);
+      ? minimax(nextState, maxDepth, alpha, beta, true, context, transposition)
+      : minimax(nextState, maxDepth - 1, alpha, beta, false, context, transposition);
 
-    if (score > bestScore) {
+    if (score > bestScore + HARD_TIE_THRESHOLD) {
       bestScore = score;
-      bestMove = move;
+      bestMoves = [move];
+    } else if (Math.abs(score - bestScore) <= HARD_TIE_THRESHOLD) {
+      bestMoves.push(move);
     }
 
     alpha = Math.max(alpha, score);
   }
 
-  return bestMove;
+  return randomFrom(bestMoves) ?? bestMoves[0];
 }
 
 function minimax(
@@ -133,18 +178,25 @@ function minimax(
   alphaInput: number,
   betaInput: number,
   maximizingPlayer: boolean,
-  board: BoardLayout
+  context: AiContext,
+  transposition: Map<string, number>
 ): number {
-  if (depth <= 0 || state.occupiedEdges.size === board.edges.length) {
-    return evaluate(state);
+  if (depth <= 0 || state.occupiedEdges.size === context.board.edges.length) {
+    return evaluate(state, context);
   }
 
-  const available = board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
+  const key = hashState(state, depth, maximizingPlayer);
+  const cached = transposition.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const available = context.board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
   if (available.length === 0) {
-    return evaluate(state);
+    return evaluate(state, context);
   }
 
-  const moves = sortMoves(available, board, state);
+  const moves = sortMoves(available, state, context);
   let alpha = alphaInput;
   let beta = betaInput;
 
@@ -152,11 +204,11 @@ function minimax(
     let maxEval = Number.NEGATIVE_INFINITY;
 
     for (const move of moves) {
-      const { state: nextState, extraTurn } = simulate(move, state, board);
+      const { state: nextState, extraTurn } = simulate(move, state, context);
 
       const evalScore = extraTurn
-        ? minimax(nextState, depth, alpha, beta, true, board)
-        : minimax(nextState, depth - 1, alpha, beta, false, board);
+        ? minimax(nextState, depth, alpha, beta, true, context, transposition)
+        : minimax(nextState, depth - 1, alpha, beta, false, context, transposition);
 
       maxEval = Math.max(maxEval, evalScore);
       alpha = Math.max(alpha, evalScore);
@@ -165,16 +217,17 @@ function minimax(
       }
     }
 
+    transposition.set(key, maxEval);
     return maxEval;
   }
 
   let minEval = Number.POSITIVE_INFINITY;
   for (const move of moves) {
-    const { state: nextState, extraTurn } = simulate(move, state, board);
+    const { state: nextState, extraTurn } = simulate(move, state, context);
 
     const evalScore = extraTurn
-      ? minimax(nextState, depth, alpha, beta, false, board)
-      : minimax(nextState, depth - 1, alpha, beta, true, board);
+      ? minimax(nextState, depth, alpha, beta, false, context, transposition)
+      : minimax(nextState, depth - 1, alpha, beta, true, context, transposition);
 
     minEval = Math.min(minEval, evalScore);
     beta = Math.min(beta, evalScore);
@@ -183,15 +236,18 @@ function minimax(
     }
   }
 
+  transposition.set(key, minEval);
   return minEval;
 }
 
-function evaluate(state: GameState): number {
+function evaluate(state: GameState, context: AiContext): number {
   const scores = getScores(state);
   const scoreDiff = (scores.o - scores.x) * 100;
 
   let nearCaptures = 0;
   let unstableZones = 0;
+  let stableZones = 0;
+
   for (const zone of state.zones) {
     if (zone.owner !== 'none') {
       continue;
@@ -202,32 +258,35 @@ function evaluate(state: GameState): number {
       nearCaptures += 1;
     } else if (occupied === 2) {
       unstableZones += 1;
+    } else if (occupied <= 1) {
+      stableZones += 1;
     }
   }
 
+  const available = context.board.edges.length - state.occupiedEdges.size;
   const turnFactor = state.currentPlayer === 'o' ? 1 : -1;
-  return scoreDiff + nearCaptures * 24 * turnFactor - unstableZones * 7;
+  return scoreDiff + nearCaptures * 26 * turnFactor - unstableZones * 10 + stableZones * 1.5 + available * 0.2;
 }
 
-function simulate(move: number, state: GameState, board: BoardLayout): { state: GameState; extraTurn: boolean } {
+function simulate(move: number, state: GameState, context: AiContext): { state: GameState; extraTurn: boolean } {
   const nextState = cloneState(state);
   nextState.occupiedEdges.add(move);
 
   let captured = false;
 
-  for (let i = 0; i < nextState.zones.length; i += 1) {
-    const zone = nextState.zones[i];
+  for (const zone of affectedZonesForEdge(move, context)) {
     if (zone.owner !== 'none') {
       continue;
     }
 
-    if (!zone.edgeIds.includes(move)) {
+    const nextZone = nextState.zones[zone.id];
+    if (!nextZone || nextZone.owner !== 'none') {
       continue;
     }
 
-    const allOccupied = zone.edgeIds.every((edgeId) => nextState.occupiedEdges.has(edgeId));
+    const allOccupied = nextZone.edgeIds.every((edgeId) => nextState.occupiedEdges.has(edgeId));
     if (allOccupied) {
-      zone.owner = nextState.currentPlayer;
+      nextZone.owner = nextState.currentPlayer;
       captured = true;
     }
   }
@@ -239,45 +298,26 @@ function simulate(move: number, state: GameState, board: BoardLayout): { state: 
   return { state: nextState, extraTurn: captured };
 }
 
-function sortMoves(moves: number[], board: BoardLayout, state: GameState): number[] {
-  return [...moves].sort((a, b) => moveScore(b, board, state) - moveScore(a, board, state));
+function sortMoves(moves: number[], state: GameState, context: AiContext): number[] {
+  return [...moves].sort((a, b) => moveScore(b, state, context) - moveScore(a, state, context));
 }
 
-function moveScore(edgeId: number, board: BoardLayout, state: GameState): number {
-  const metrics = getMoveMetrics(edgeId, board, state);
+function moveScore(edgeId: number, state: GameState, context: AiContext): number {
+  const metrics = getMoveMetrics(edgeId, state, context);
   let score = 0;
-  score += metrics.captures * 100;
-  score += isSafe(edgeId, board, state) ? 40 : 0;
-  score -= metrics.createsThird * 50;
-  score += metrics.createsSecond * 4;
-  return score + centerWeight(edgeId, board) * 3;
+  score += metrics.captures * 110;
+  score += isSafe(edgeId, state, context) ? 40 : 0;
+  score -= metrics.createsThird * 60;
+  score += metrics.createsSecond * 5;
+  return score + centerWeight(edgeId, context) * 5;
 }
 
-function captures(edgeId: number, board: BoardLayout, state: GameState): boolean {
-  for (const zone of affectedZonesForEdge(edgeId, board)) {
-    if (zone.owner !== 'none' || !zone.edgeIds.includes(edgeId)) {
-      continue;
-    }
-
-    const occupied = zone.edgeIds.filter((zoneEdgeId) => state.occupiedEdges.has(zoneEdgeId)).length;
-    if (occupied === 3) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function getMoveMetrics(edgeId: number, board: BoardLayout, state: GameState): {
-  captures: number;
-  createsThird: number;
-  createsSecond: number;
-} {
+function getMoveMetrics(edgeId: number, state: GameState, context: AiContext): MoveMetrics {
   let captures = 0;
   let createsThird = 0;
   let createsSecond = 0;
 
-  for (const zone of affectedZonesForEdge(edgeId, board)) {
+  for (const zone of affectedZonesForEdge(edgeId, context)) {
     if (zone.owner !== 'none') {
       continue;
     }
@@ -295,21 +335,34 @@ function getMoveMetrics(edgeId: number, board: BoardLayout, state: GameState): {
   return { captures, createsThird, createsSecond };
 }
 
-function centerWeight(edgeId: number, board: BoardLayout): number {
-  const edge = board.edges.find((candidate) => candidate.id === edgeId);
+function centerWeight(edgeId: number, context: AiContext): number {
+  const cached = context.centerCache.get(edgeId);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const edge = context.board.edges[edgeId];
   if (!edge) {
     return 0;
   }
 
-  const a = board.nodes[edge.a];
-  const b = board.nodes[edge.b];
-  const centerX = (a.position.x + b.position.x) / 2;
-  const centerY = (a.position.y + b.position.y) / 2;
+  const a = context.board.nodes[edge.a];
+  const b = context.board.nodes[edge.b];
+  const x = (a.position.x + b.position.x) / 2;
+  const y = (a.position.y + b.position.y) / 2;
 
-  const dist = Math.sqrt(centerX * centerX + centerY * centerY);
-  return Math.max(0, 1 - dist / 10);
+  const dist = Math.hypot(x - context.centerX, y - context.centerY);
+  const weight = Math.max(0, 1 - dist / context.maxDist);
+  context.centerCache.set(edgeId, weight);
+  return weight;
 }
 
-function affectedZonesForEdge(edgeId: number, board: BoardLayout) {
-  return board.zones.filter((zone) => zone.edgeIds.includes(edgeId));
+function affectedZonesForEdge(edgeId: number, context: AiContext): Zone[] {
+  return context.edgeZones.get(edgeId) ?? [];
+}
+
+function hashState(state: GameState, depth: number, maximizingPlayer: boolean): string {
+  const occupied = Array.from(state.occupiedEdges).sort((a, b) => a - b).join(',');
+  const owners = state.zones.map((zone) => zone.owner[0]).join('');
+  return `${state.currentPlayer}|${depth}|${maximizingPlayer ? '1' : '0'}|${occupied}|${owners}`;
 }
