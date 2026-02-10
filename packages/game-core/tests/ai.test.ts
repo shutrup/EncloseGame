@@ -1,40 +1,38 @@
 import { describe, expect, test } from 'vitest';
-import { bestMove, createGameSession, type GameState } from '../src';
+import { computeAIMove, createGameSession } from '../src/engine';
 
-function cloneStateWithEdges(sessionState: GameState, edgeIds: number[]): GameState {
-  return {
-    currentPlayer: 'o',
-    occupiedEdges: new Set(edgeIds),
-    zones: sessionState.zones.map((zone) => ({ ...zone }))
-  };
+function markOccupied(session: ReturnType<typeof createGameSession>, edgeIds: number[], currentPlayer: 'x' | 'o' = 'o') {
+  for (const edgeId of edgeIds) {
+    session.state.occupiedEdges.add(edgeId);
+  }
+  session.state.currentPlayer = currentPlayer;
 }
 
-describe('ai move selection', () => {
-  test('hard AI closes a box when capture is available', () => {
-    const session = createGameSession({ preset: 'mini' });
-    const zone = session.board.zones[0];
-    const occupied = zone.edgeIds.slice(0, 3);
-    const state = cloneStateWithEdges(session.state, occupied);
+describe('game-core ai', () => {
+  test('medium and hard complete a capture when available', () => {
+    const medium = createGameSession({ preset: 'mini', aiLevel: 'medium' });
+    const hard = createGameSession({ preset: 'mini', aiLevel: 'hard' });
 
-    const move = bestMove(session.board, state, 'hard');
+    const targetZone = medium.board.zones[0];
+    const [a, b, c, d] = targetZone.edgeIds;
 
-    expect(move).toBe(zone.edgeIds[3]);
+    markOccupied(medium, [a, b, c]);
+    markOccupied(hard, [a, b, c]);
+
+    expect(computeAIMove(medium, 'medium')).toBe(d);
+    expect(computeAIMove(hard, 'hard')).toBe(d);
   });
 
-  test('hard AI avoids creating a third edge when safe moves exist', () => {
-    const session = createGameSession({ preset: 'mini' });
-    const zone = session.board.zones.find((candidate) => candidate.edgeIds.length === 4);
-    expect(zone).toBeDefined();
+  test('hard avoids obvious third-edge trap when safe options exist', () => {
+    const session = createGameSession({ preset: 'mini', aiLevel: 'hard' });
+    const riskyZone = session.board.zones[0];
+    const [a, b, c, d] = riskyZone.edgeIds;
 
-    const occupied = zone!.edgeIds.slice(0, 2);
-    const state = cloneStateWithEdges(session.state, occupied);
+    // Two edges already occupied -> c and d would create a third edge (risky move).
+    markOccupied(session, [a, b]);
 
-    const move = bestMove(session.board, state, 'hard');
+    const move = computeAIMove(session, 'hard');
     expect(move).toBeDefined();
-
-    const dangerousMoves = zone!.edgeIds.slice(2);
-    // In this synthetic position, there are many untouched edges that keep every zone at 0-1 occupied edges.
-    // Improved hard AI should avoid opening this box and choose one of those safe alternatives.
-    expect(dangerousMoves).not.toContain(move);
+    expect([c, d]).not.toContain(move);
   });
 });
