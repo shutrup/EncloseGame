@@ -1,10 +1,11 @@
-import { cloneState, getScores } from './state';
 import { getBoardBounds } from './board';
-import { nextPlayer, type AILevel, type BoardLayout, type GameState, type Zone } from './types';
+import { cloneState, getScores } from './state';
+import { nextPlayer, type AILevel, type BoardLayout, type Edge, type GameState, type Zone } from './types';
 
 interface AiContext {
   board: BoardLayout;
   edgeZones: Map<number, Zone[]>;
+  edgeById: Map<number, Edge>;
   centerCache: Map<number, number>;
   centerX: number;
   centerY: number;
@@ -15,12 +16,20 @@ interface MoveMetrics {
   captures: number;
   createsThird: number;
   createsSecond: number;
+  givesCaptures: number;
+  chainCaptures: number;
+}
+
+interface ReplyPressure {
+  immediateCaptures: number;
+  openThirds: number;
+  safeReplies: number;
 }
 
 const HARD_TIE_THRESHOLD = 0.0001;
 
 export function bestMove(board: BoardLayout, state: GameState, level: AILevel): number | undefined {
-  const available = board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
+  const available = availableEdges(state, board);
   if (available.length === 0) {
     return undefined;
   }
@@ -66,6 +75,11 @@ function buildContext(board: BoardLayout): AiContext {
     }
   }
 
+  const edgeById = new Map<number, Edge>();
+  for (const edge of board.edges) {
+    edgeById.set(edge.id, edge);
+  }
+
   const bounds = getBoardBounds(board);
   const centerX = (bounds.minX + bounds.maxX) / 2;
   const centerY = (bounds.minY + bounds.maxY) / 2;
@@ -77,6 +91,7 @@ function buildContext(board: BoardLayout): AiContext {
   return {
     board,
     edgeZones,
+    edgeById,
     centerCache: new Map<number, number>(),
     centerX,
     centerY,
@@ -91,9 +106,13 @@ function randomFrom(values: number[]): number | undefined {
   return values[Math.floor(Math.random() * values.length)];
 }
 
+function availableEdges(state: GameState, board: BoardLayout): number[] {
+  return board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
+}
+
 function findCapturingEdge(state: GameState, available: number[], context: AiContext): number | undefined {
   for (const edgeId of available) {
-    const metrics = getMoveMetrics(edgeId, state, context);
+    const metrics = getLocalMoveMetrics(edgeId, state, context);
     if (metrics.captures > 0) {
       return edgeId;
     }
@@ -124,11 +143,18 @@ function solveHeuristic(state: GameState, available: number[], context: AiContex
 
   for (const edgeId of moves) {
     const metrics = getMoveMetrics(edgeId, state, context);
+    const pressure = estimateReplyPressure(edgeId, state, context);
+
     let score = 0;
-    score += metrics.captures * 170;
+    score += metrics.captures * 180;
+    score += metrics.chainCaptures * 75;
     score += metrics.createsSecond * 7;
-    score -= metrics.createsThird * 135;
-    score += isSafe(edgeId, state, context) ? 22 : 0;
+    score -= metrics.createsThird * 145;
+    score -= metrics.givesCaptures * 190;
+    score -= pressure.immediateCaptures * 95;
+    score -= pressure.openThirds * 16;
+    score -= pressure.safeReplies * 2;
+    score += isSafe(edgeId, state, context) ? 24 : 0;
     score += centerWeight(edgeId, context) * 8;
 
     if (score > bestScore) {
@@ -140,9 +166,35 @@ function solveHeuristic(state: GameState, available: number[], context: AiContex
   return best;
 }
 
+function estimateReplyPressure(edgeId: number, state: GameState, context: AiContext): ReplyPressure {
+  const { state: nextState } = simulate(edgeId, state, context);
+
+  // We kept the turn, so opponent pressure is irrelevant for this move.
+  if (nextState.currentPlayer === state.currentPlayer) {
+    return { immediateCaptures: 0, openThirds: 0, safeReplies: 0 };
+  }
+
+  const replies = availableEdges(nextState, context.board);
+  let immediateCaptures = 0;
+  let openThirds = 0;
+  let safeReplies = 0;
+
+  for (const replyEdge of replies) {
+    const metrics = getLocalMoveMetrics(replyEdge, nextState, context);
+    immediateCaptures += metrics.captures;
+    openThirds += metrics.createsThird;
+    if (isSafe(replyEdge, nextState, context)) {
+      safeReplies += 1;
+    }
+  }
+
+  return { immediateCaptures, openThirds, safeReplies };
+}
+
 function solveMinimax(state: GameState, available: number[], context: AiContext): number {
   const emptyCount = available.length;
   const maxDepth = emptyCount <= 10 ? 11 : emptyCount <= 18 ? 7 : 5;
+  const quiescenceBudget = emptyCount <= 14 ? 2 : 1;
   const transposition = new Map<string, number>();
 
   let bestScore = Number.NEGATIVE_INFINITY;
@@ -156,8 +208,8 @@ function solveMinimax(state: GameState, available: number[], context: AiContext)
     const { state: nextState, extraTurn } = simulate(move, state, context);
 
     const score = extraTurn
-      ? minimax(nextState, maxDepth, alpha, beta, true, context, transposition)
-      : minimax(nextState, maxDepth - 1, alpha, beta, false, context, transposition);
+      ? minimax(nextState, maxDepth, alpha, beta, true, context, transposition, quiescenceBudget)
+      : minimax(nextState, maxDepth - 1, alpha, beta, false, context, transposition, quiescenceBudget);
 
     if (score > bestScore + HARD_TIE_THRESHOLD) {
       bestScore = score;
@@ -179,19 +231,33 @@ function minimax(
   betaInput: number,
   maximizingPlayer: boolean,
   context: AiContext,
-  transposition: Map<string, number>
+  transposition: Map<string, number>,
+  quiescenceLeft: number
 ): number {
-  if (depth <= 0 || state.occupiedEdges.size === context.board.edges.length) {
+  if (state.occupiedEdges.size === context.board.edges.length) {
     return evaluate(state, context);
   }
 
-  const key = hashState(state, depth, maximizingPlayer);
+  let effectiveDepth = depth;
+  let effectiveQuiescence = quiescenceLeft;
+
+  if (effectiveDepth <= 0) {
+    if (effectiveQuiescence > 0 && countCapturableZones(state) > 0) {
+      // Extend tactical lines where forced captures are still available.
+      effectiveDepth = 1;
+      effectiveQuiescence -= 1;
+    } else {
+      return evaluate(state, context);
+    }
+  }
+
+  const key = hashState(state, effectiveDepth, maximizingPlayer, effectiveQuiescence);
   const cached = transposition.get(key);
   if (cached !== undefined) {
     return cached;
   }
 
-  const available = context.board.edges.map((edge) => edge.id).filter((edgeId) => !state.occupiedEdges.has(edgeId));
+  const available = availableEdges(state, context.board);
   if (available.length === 0) {
     return evaluate(state, context);
   }
@@ -207,8 +273,8 @@ function minimax(
       const { state: nextState, extraTurn } = simulate(move, state, context);
 
       const evalScore = extraTurn
-        ? minimax(nextState, depth, alpha, beta, true, context, transposition)
-        : minimax(nextState, depth - 1, alpha, beta, false, context, transposition);
+        ? minimax(nextState, effectiveDepth, alpha, beta, true, context, transposition, effectiveQuiescence)
+        : minimax(nextState, effectiveDepth - 1, alpha, beta, false, context, transposition, effectiveQuiescence);
 
       maxEval = Math.max(maxEval, evalScore);
       alpha = Math.max(alpha, evalScore);
@@ -226,8 +292,8 @@ function minimax(
     const { state: nextState, extraTurn } = simulate(move, state, context);
 
     const evalScore = extraTurn
-      ? minimax(nextState, depth, alpha, beta, false, context, transposition)
-      : minimax(nextState, depth - 1, alpha, beta, true, context, transposition);
+      ? minimax(nextState, effectiveDepth, alpha, beta, false, context, transposition, effectiveQuiescence)
+      : minimax(nextState, effectiveDepth - 1, alpha, beta, true, context, transposition, effectiveQuiescence);
 
     minEval = Math.min(minEval, evalScore);
     beta = Math.min(beta, evalScore);
@@ -263,9 +329,46 @@ function evaluate(state: GameState, context: AiContext): number {
     }
   }
 
+  const safeMoves = countSafeMoves(state, context);
+  const handoverRisks = countHandoverRiskMoves(state, context);
   const available = context.board.edges.length - state.occupiedEdges.size;
   const turnFactor = state.currentPlayer === 'o' ? 1 : -1;
-  return scoreDiff + nearCaptures * 26 * turnFactor - unstableZones * 10 + stableZones * 1.5 + available * 0.2;
+
+  return (
+    scoreDiff +
+    nearCaptures * 30 * turnFactor -
+    unstableZones * 11 +
+    stableZones * 1.2 +
+    safeMoves * 4 * turnFactor -
+    handoverRisks * 5 * turnFactor +
+    available * 0.15
+  );
+}
+
+function countSafeMoves(state: GameState, context: AiContext): number {
+  let safe = 0;
+  for (const edgeId of availableEdges(state, context.board)) {
+    if (isSafe(edgeId, state, context)) {
+      safe += 1;
+    }
+  }
+  return safe;
+}
+
+function countHandoverRiskMoves(state: GameState, context: AiContext): number {
+  let risks = 0;
+  for (const edgeId of availableEdges(state, context.board)) {
+    const metrics = getLocalMoveMetrics(edgeId, state, context);
+    if (metrics.captures > 0) {
+      continue;
+    }
+
+    if (metrics.createsThird > 0) {
+      risks += metrics.createsThird;
+    }
+  }
+
+  return risks;
 }
 
 function simulate(move: number, state: GameState, context: AiContext): { state: GameState; extraTurn: boolean } {
@@ -305,14 +408,30 @@ function sortMoves(moves: number[], state: GameState, context: AiContext): numbe
 function moveScore(edgeId: number, state: GameState, context: AiContext): number {
   const metrics = getMoveMetrics(edgeId, state, context);
   let score = 0;
-  score += metrics.captures * 110;
-  score += isSafe(edgeId, state, context) ? 40 : 0;
-  score -= metrics.createsThird * 60;
-  score += metrics.createsSecond * 5;
+  score += metrics.captures * 120;
+  score += metrics.chainCaptures * 52;
+  score += isSafe(edgeId, state, context) ? 35 : 0;
+  score -= metrics.createsThird * 62;
+  score -= metrics.givesCaptures * 82;
+  score += metrics.createsSecond * 4;
   return score + centerWeight(edgeId, context) * 5;
 }
 
 function getMoveMetrics(edgeId: number, state: GameState, context: AiContext): MoveMetrics {
+  const local = getLocalMoveMetrics(edgeId, state, context);
+  const simulation = simulate(edgeId, state, context);
+  const capturable = countCapturableZones(simulation.state);
+
+  return {
+    captures: local.captures,
+    createsThird: local.createsThird,
+    createsSecond: local.createsSecond,
+    givesCaptures: simulation.state.currentPlayer !== state.currentPlayer ? capturable : 0,
+    chainCaptures: simulation.state.currentPlayer === state.currentPlayer ? capturable : 0
+  };
+}
+
+function getLocalMoveMetrics(edgeId: number, state: GameState, context: AiContext): Pick<MoveMetrics, 'captures' | 'createsThird' | 'createsSecond'> {
   let captures = 0;
   let createsThird = 0;
   let createsSecond = 0;
@@ -335,13 +454,30 @@ function getMoveMetrics(edgeId: number, state: GameState, context: AiContext): M
   return { captures, createsThird, createsSecond };
 }
 
+function countCapturableZones(state: GameState): number {
+  let capturable = 0;
+
+  for (const zone of state.zones) {
+    if (zone.owner !== 'none') {
+      continue;
+    }
+
+    const occupied = zone.edgeIds.filter((edgeId) => state.occupiedEdges.has(edgeId)).length;
+    if (occupied === 3) {
+      capturable += 1;
+    }
+  }
+
+  return capturable;
+}
+
 function centerWeight(edgeId: number, context: AiContext): number {
   const cached = context.centerCache.get(edgeId);
   if (cached !== undefined) {
     return cached;
   }
 
-  const edge = context.board.edges[edgeId];
+  const edge = context.edgeById.get(edgeId);
   if (!edge) {
     return 0;
   }
@@ -361,8 +497,8 @@ function affectedZonesForEdge(edgeId: number, context: AiContext): Zone[] {
   return context.edgeZones.get(edgeId) ?? [];
 }
 
-function hashState(state: GameState, depth: number, maximizingPlayer: boolean): string {
+function hashState(state: GameState, depth: number, maximizingPlayer: boolean, quiescenceLeft: number): string {
   const occupied = Array.from(state.occupiedEdges).sort((a, b) => a - b).join(',');
   const owners = state.zones.map((zone) => zone.owner[0]).join('');
-  return `${state.currentPlayer}|${depth}|${maximizingPlayer ? '1' : '0'}|${occupied}|${owners}`;
+  return `${state.currentPlayer}|${depth}|${quiescenceLeft}|${maximizingPlayer ? '1' : '0'}|${occupied}|${owners}`;
 }
