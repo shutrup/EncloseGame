@@ -32,13 +32,16 @@ export default function App() {
 
     let handler: (() => void) | undefined;
 
-    if (showSplash || screen === 'home') {
+    if (showSplash) {
       tg.BackButton.hide();
       return;
     }
 
     if (rulesOpen) {
       handler = closeRules;
+    } else if (screen === 'home') {
+      tg.BackButton.hide();
+      return;
     } else if (screen === 'setup') {
       handler = backToHome;
     } else if (screen === 'game') {
