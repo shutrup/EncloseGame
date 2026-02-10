@@ -51,9 +51,9 @@ export function SetupScreen() {
       className="fixed inset-0 mx-auto flex w-full max-w-[860px] flex-col overflow-hidden px-4 pb-6 pt-[calc(env(safe-area-inset-top)+1rem)]"
     >
       <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        initial={false}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.1 }}
         className="mb-2 shrink-0"
       >
         <h1 className="text-center text-2xl font-black tracking-tight">{t('setup.title')}</h1>

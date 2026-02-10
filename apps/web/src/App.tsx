@@ -26,14 +26,14 @@ export default function App() {
         {showSplash && <SplashScreen />}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         {!showSplash && screen === 'home' && (
           <motion.div
             key="home"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'linear' }}
           >
             <HomeScreen />
           </motion.div>
@@ -41,10 +41,10 @@ export default function App() {
         {!showSplash && screen === 'setup' && (
           <motion.div
             key="setup"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'linear' }}
           >
             <SetupScreen />
           </motion.div>
@@ -52,10 +52,10 @@ export default function App() {
         {!showSplash && screen === 'game' && (
           <motion.div
             key="game"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'linear' }}
           >
             <GameScreen />
           </motion.div>
@@ -63,10 +63,10 @@ export default function App() {
         {!showSplash && screen === 'settings' && (
           <motion.div
             key="settings"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'linear' }}
           >
             <SettingsScreen />
           </motion.div>
