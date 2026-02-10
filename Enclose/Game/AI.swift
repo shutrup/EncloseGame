@@ -91,13 +91,40 @@ private final class HeuristicSolver {
 
     private static func moveScore(edge: Int, board: BoardLayout, state: GameState) -> Double {
         let metrics = moveMetrics(edge: edge, board: board, state: state)
+        let pressure = opponentPressure(after: edge, board: board, state: state)
         var score = 0.0
         score += Double(metrics.captures) * 160.0
         score += Double(metrics.createsSecond) * 8.0
         score -= Double(metrics.createsThird) * 125.0
+        score -= Double(pressure.immediateCaptures) * 95.0
+        score -= Double(pressure.openThirds) * 18.0
+        score += Double(pressure.safeReplyCount) * 4.0
         score += AI.isSafe(edge: edge, board: board, state: state) ? 22.0 : 0.0
         score += centerWeight(edge: edge, board: board) * 6.0
         return score
+    }
+
+    private static func opponentPressure(after edge: Int, board: BoardLayout, state: GameState) -> (immediateCaptures: Int, openThirds: Int, safeReplyCount: Int) {
+        var nextState = state
+        _ = MinimaxSolver.simulate(move: edge, state: &nextState, board: board)
+
+        let replies = board.edges.map { $0.id }.filter { !nextState.occupiedEdges.contains($0) }
+        var immediateCaptures = 0
+        var openThirds = 0
+        var safeReplyCount = 0
+
+        for reply in replies {
+            let replyMetrics = moveMetrics(edge: reply, board: board, state: nextState)
+            if replyMetrics.captures > 0 {
+                immediateCaptures += replyMetrics.captures
+            }
+            openThirds += replyMetrics.createsThird
+            if AI.isSafe(edge: reply, board: board, state: nextState) {
+                safeReplyCount += 1
+            }
+        }
+
+        return (immediateCaptures, openThirds, safeReplyCount)
     }
 
     private static func moveMetrics(edge: Int, board: BoardLayout, state: GameState) -> (captures: Int, createsThird: Int, createsSecond: Int) {
@@ -181,11 +208,11 @@ private final class MinimaxSolver {
     
     private static func minimax(state: GameState, depth: Int, alpha: Int, beta: Int, maximizingPlayer: Bool, board: BoardLayout) -> Int {
         if depth == 0 || state.occupiedEdges.count == board.edges.count {
-            return evaluate(state, maximizingPlayer: maximizingPlayer)
+            return evaluate(state, maximizingPlayer: maximizingPlayer, board: board)
         }
         
         let available = board.edges.map { $0.id }.filter { !state.occupiedEdges.contains($0) }
-        if available.isEmpty { return evaluate(state, maximizingPlayer: maximizingPlayer) }
+        if available.isEmpty { return evaluate(state, maximizingPlayer: maximizingPlayer, board: board) }
         
         // Sort moves to improve pruning: Chains/Captures first
         let moves = sortMoves(moves: available, board: board, state: state)
@@ -237,12 +264,13 @@ private final class MinimaxSolver {
     }
     
     // Heuristic Evaluation
-    private static func evaluate(_ state: GameState, maximizingPlayer: Bool) -> Int {
+    private static func evaluate(_ state: GameState, maximizingPlayer: Bool, board: BoardLayout) -> Int {
         _ = maximizingPlayer
         let scoreDiff = (state.scoreO - state.scoreX) * 100
 
         var nearCaptures = 0
         var unstableZones = 0
+        var controlledZones = 0
 
         for zone in state.zones where zone.owner == .none {
             let occupied = zone.edgeIds.filter { state.occupiedEdges.contains($0) }.count
@@ -250,15 +278,32 @@ private final class MinimaxSolver {
                 nearCaptures += 1
             } else if occupied == 2 {
                 unstableZones += 1
+            } else if occupied <= 1 {
+                controlledZones += 1
             }
         }
 
+        let safeMoves = boardSafeMoves(state: state, board: board)
+
         let turnFactor = state.currentPlayer == .o ? 1 : -1
-        return scoreDiff + (nearCaptures * 24 * turnFactor) - (unstableZones * 7)
+        return scoreDiff
+            + (nearCaptures * 24 * turnFactor)
+            - (unstableZones * 9)
+            + (controlledZones * 2)
+            + (safeMoves * 5 * turnFactor)
+    }
+
+    private static func boardSafeMoves(state: GameState, board: BoardLayout) -> Int {
+        board.edges.reduce(into: 0) { total, edge in
+            guard !state.occupiedEdges.contains(edge.id) else { return }
+            if isSafe(edge: edge.id, board: board, state: state) {
+                total += 1
+            }
+        }
     }
     
     // Logic from GameEngine
-    private static func simulate(move: Int, state: inout GameState, board: BoardLayout) -> Bool {
+    fileprivate static func simulate(move: Int, state: inout GameState, board: BoardLayout) -> Bool {
         state.occupiedEdges.insert(move)
         var captured = false
         
