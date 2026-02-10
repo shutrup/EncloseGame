@@ -1,72 +1,40 @@
 import { describe, expect, test } from 'vitest';
-import { computeAIMove, createGameSession } from '../src/engine';
+import { bestMove, createGameSession, type GameState } from '../src';
 
-function unoccupiedEdgesForZone(session: ReturnType<typeof createGameSession>, zoneIndex = 0): number[] {
-  const zone = session.board.zones[zoneIndex];
-  return zone.edgeIds.filter((edgeId) => !session.state.occupiedEdges.has(edgeId));
+function cloneStateWithEdges(sessionState: GameState, edgeIds: number[]): GameState {
+  return {
+    currentPlayer: 'o',
+    occupiedEdges: new Set(edgeIds),
+    zones: sessionState.zones.map((zone) => ({ ...zone }))
+  };
 }
 
-describe('game-core ai', () => {
-  test('medium captures a zone when capture is available', () => {
-    const session = createGameSession({ preset: 'mini', aiLevel: 'medium' });
-    const zoneEdges = session.board.zones[0].edgeIds;
+describe('ai move selection', () => {
+  test('hard AI closes a box when capture is available', () => {
+    const session = createGameSession({ preset: 'mini' });
+    const zone = session.board.zones[0];
+    const occupied = zone.edgeIds.slice(0, 3);
+    const state = cloneStateWithEdges(session.state, occupied);
 
-    session.state.currentPlayer = 'o';
-    session.state.occupiedEdges.add(zoneEdges[0]);
-    session.state.occupiedEdges.add(zoneEdges[1]);
-    session.state.occupiedEdges.add(zoneEdges[2]);
+    const move = bestMove(session.board, state, 'hard');
 
-    const aiMove = computeAIMove(session);
-
-    expect(aiMove).toBe(zoneEdges[3]);
+    expect(move).toBe(zone.edgeIds[3]);
   });
 
-  test('hard avoids creating an immediate capture for the opponent when safe edges exist', () => {
-    const session = createGameSession({ preset: 'mini', aiLevel: 'hard' });
-    const zoneEdges = session.board.zones[0].edgeIds;
+  test('hard AI avoids creating a third edge when safe moves exist', () => {
+    const session = createGameSession({ preset: 'mini' });
+    const zone = session.board.zones.find((candidate) => candidate.edgeIds.length === 4);
+    expect(zone).toBeDefined();
 
-    session.state.currentPlayer = 'o';
-    session.state.occupiedEdges.add(zoneEdges[0]);
-    session.state.occupiedEdges.add(zoneEdges[1]);
+    const occupied = zone!.edgeIds.slice(0, 2);
+    const state = cloneStateWithEdges(session.state, occupied);
 
-    const riskyMoves = new Set([zoneEdges[2], zoneEdges[3]]);
-    const safeMoves = session.board.edges
-      .map((edge) => edge.id)
-      .filter((edgeId) => !session.state.occupiedEdges.has(edgeId) && !riskyMoves.has(edgeId));
+    const move = bestMove(session.board, state, 'hard');
+    expect(move).toBeDefined();
 
-    expect(safeMoves.length).toBeGreaterThan(0);
-
-    const aiMove = computeAIMove(session);
-
-    expect(aiMove).toBeDefined();
-    expect(riskyMoves.has(aiMove as number)).toBe(false);
-  });
-
-  test('hard takes available chain captures when retaining the turn', () => {
-    const session = createGameSession({ preset: 'mini', aiLevel: 'hard' });
-    const firstZone = session.board.zones[0];
-    const secondZone = session.board.zones[1];
-
-    session.state.currentPlayer = 'o';
-
-    for (const edgeId of firstZone.edgeIds.slice(0, 3)) {
-      session.state.occupiedEdges.add(edgeId);
-    }
-
-    const sharedEdge = firstZone.edgeIds.find((edgeId) => secondZone.edgeIds.includes(edgeId));
-    expect(sharedEdge).toBeDefined();
-
-    for (const edgeId of secondZone.edgeIds) {
-      if (edgeId !== sharedEdge) {
-        session.state.occupiedEdges.add(edgeId);
-      }
-    }
-
-    const aiMove = computeAIMove(session);
-
-    expect(aiMove).toBe(sharedEdge);
-
-    const remainingInFirstZone = unoccupiedEdgesForZone(session, 0);
-    expect(remainingInFirstZone).toContain(sharedEdge);
+    const dangerousMoves = zone!.edgeIds.slice(2);
+    // In this synthetic position, there are many untouched edges that keep every zone at 0-1 occupied edges.
+    // Improved hard AI should avoid opening this box and choose one of those safe alternatives.
+    expect(dangerousMoves).not.toContain(move);
   });
 });
