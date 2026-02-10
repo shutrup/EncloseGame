@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
 import { useI18n, type Locale } from '../store/i18n';
-import { useTelegramBackButton } from '../hooks/useTelegram';
 
 export function SettingsScreen() {
     const {
@@ -10,13 +9,10 @@ export function SettingsScreen() {
         animationsEnabled,
         setAnimationsEnabled,
         hintsEnabled,
-        setHintsEnabled,
-        closeSettings
+        setHintsEnabled
     } = useGameStore();
 
     const { locale, setLocale, t } = useI18n();
-
-    useTelegramBackButton(closeSettings);
 
     return (
         <div className="flex min-h-dvh flex-col px-4 pb-6 pt-[calc(env(safe-area-inset-top)+1rem)]">

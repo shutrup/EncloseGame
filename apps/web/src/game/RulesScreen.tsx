@@ -1,17 +1,14 @@
 import { motion } from 'framer-motion';
 import { useGameStore } from '../store/gameStore';
-import { useTelegramBackButton } from '../hooks/useTelegram';
 import { useI18n } from '../store/i18n';
 
 interface RulesScreenProps {
     fromGame?: boolean;
 }
 
-export function RulesScreen({ fromGame }: RulesScreenProps) {
+export function RulesScreen({ fromGame: _fromGame }: RulesScreenProps) {
     const closeRules = useGameStore((s) => s.closeRules);
     const { t } = useI18n();
-
-    useTelegramBackButton(closeRules);
 
     const rules = [
         {

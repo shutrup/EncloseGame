@@ -6,7 +6,6 @@ import { hapticImpact } from '../lib/telegram';
 import { gameSummary, useGameStore } from '../store/gameStore';
 import { BoardSvg } from './BoardSvg';
 // import { BoardSvg } from './BoardSvg';
-import { useTelegramBackButton } from '../hooks/useTelegram';
 import { useI18n } from '../store/i18n';
 
 export function GameScreen() {
@@ -26,8 +25,6 @@ export function GameScreen() {
     rulesOpen
   } = useGameStore();
   const { t } = useI18n();
-
-  useTelegramBackButton(backToSetup, !rulesOpen);
 
   const [particleTrigger, setParticleTrigger] = useState<{ x: number; y: number } | null>(null);
   const [particleColor, setParticleColor] = useState('#1690ff');

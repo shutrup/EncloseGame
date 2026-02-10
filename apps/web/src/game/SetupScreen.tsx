@@ -4,7 +4,6 @@ import type { AILevel, BoardPreset } from '@enclose/game-core';
 import { SegmentedControl } from '../components/SegmentedControl';
 import { useGameStore } from '../store/gameStore';
 import { useI18n } from '../store/i18n';
-import { useTelegramBackButton } from '../hooks/useTelegram';
 
 type GameMode = 'pvp' | 'single';
 
@@ -20,10 +19,8 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function SetupScreen() {
-  const { setup, setPreset, setMode, setDifficulty, startGame, backToHome } = useGameStore();
+  const { setup, setPreset, setMode, setDifficulty, startGame } = useGameStore();
   const { t } = useI18n();
-
-  useTelegramBackButton(backToHome);
   // useTelegramMainButton('Играть', startGame);
 
   const presetOptions: { value: BoardPreset; label: string }[] = [
