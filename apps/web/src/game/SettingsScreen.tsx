@@ -19,17 +19,9 @@ export function SettingsScreen() {
     useTelegramBackButton(closeSettings);
 
     return (
-        <div className="flex min-h-dvh flex-col px-4 pb-6 pt-4">
-            <header className="mb-6 flex items-center justify-between relative">
-                <button
-                    type="button"
-                    onClick={closeSettings}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-2xl text-white transition active:bg-white/10"
-                >
-                    ‹
-                </button>
-                <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-3xl font-black">{t('settings.title')}</h1>
-                <div className="w-11" />
+        <div className="flex min-h-dvh flex-col px-4 pb-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
+            <header className="mb-6">
+                <h1 className="text-center text-3xl font-black">{t('settings.title')}</h1>
             </header>
 
             <motion.div

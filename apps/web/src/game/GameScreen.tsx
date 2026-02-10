@@ -126,7 +126,7 @@ export function GameScreen() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 mx-auto flex w-full max-w-[900px] flex-col overflow-hidden px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+3.5rem)]"
+      className="fixed inset-0 mx-auto flex w-full max-w-[900px] flex-col overflow-hidden px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-[calc(env(safe-area-inset-top)+1rem)]"
     >
       <motion.header
         initial={{ opacity: 0, y: -15 }}
@@ -134,16 +134,6 @@ export function GameScreen() {
         transition={{ duration: 0.25 }}
         className="relative mb-1 flex shrink-0 items-center justify-between"
       >
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg font-bold transition active:scale-95"
-          onClick={backToSetup}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-
         <div className="absolute left-1/2 -translate-x-1/2 text-xl font-extrabold">Enclose</div>
 
         <div className="flex items-center gap-1.5">

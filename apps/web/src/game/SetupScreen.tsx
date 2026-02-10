@@ -48,25 +48,15 @@ export function SetupScreen() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 mx-auto flex w-full max-w-[860px] flex-col overflow-hidden px-4 pb-6 pt-[calc(env(safe-area-inset-top)+3rem)]"
+      className="fixed inset-0 mx-auto flex w-full max-w-[860px] flex-col overflow-hidden px-4 pb-6 pt-[calc(env(safe-area-inset-top)+1rem)]"
     >
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-2 shrink-0 flex items-center justify-between relative"
+        className="mb-2 shrink-0"
       >
-        <button
-          type="button"
-          onClick={backToHome}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5 text-2xl text-white transition active:bg-white/10"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-center text-2xl font-black tracking-tight">{t('setup.title')}</h1>
-        <div className="w-11" />
+        <h1 className="text-center text-2xl font-black tracking-tight">{t('setup.title')}</h1>
       </motion.header>
 
       <div className="flex-1 overflow-y-auto overscroll-none py-2">
