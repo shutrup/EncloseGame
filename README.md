@@ -1,79 +1,39 @@
-# Enclose 🎮
+# Enclose
 
-Стратегическая игра "Точки и квадраты" — Telegram Mini App
+Enclose is a Dots and Boxes style strategy game focused on native iOS.
 
-![Enclose Game](https://img.shields.io/badge/Platform-Telegram%20Mini%20App-blue)
-![React](https://img.shields.io/badge/React-18-61dafb)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6)
-![Vite](https://img.shields.io/badge/Vite-6.4-646cff)
+## Project Structure
 
-## 🎯 Описание
+- `/Users/sarap005931/Desktop/Enclose/Enclose` — SwiftUI iOS app
+- `/Users/sarap005931/Desktop/Enclose/packages/game-core` — shared TypeScript game logic and AI experiments
+- `/Users/sarap005931/Desktop/Enclose/ai-trainer` — Python Q-learning trainer for AI weights
 
-Enclose — это классическая игра "Точки и квадраты" с современным дизайном и плавными анимациями. Соединяй точки, захватывай квадраты и побеждай!
+## Development
 
-## ✨ Особенности
+### iOS app
 
-- 🎨 **Современный UI** — градиенты, glassmorphism, анимации
-- 🤖 **AI противник** — 3 уровня сложности (легкий, средний, сложный)
-- 👥 **PvP режим** — игра вдвоём на одном устройстве
-- 🎵 **Звуковые эффекты** — клики, захваты, победа
-- 📱 **Telegram интеграция** — haptic feedback, native UI
-- 🌍 **Локализация** — русский и английский языки
-- 📐 **3 размера поля** — мини (13), стандарт (25), большой (41)
+1. Open `/Users/sarap005931/Desktop/Enclose/Enclose.xcodeproj` in Xcode.
+2. Select target `Enclose`.
+3. Run on simulator/device.
 
-## 🛠 Технологии
-
-| Категория | Технология |
-|-----------|------------|
-| UI | React 18 |
-| Типы | TypeScript |
-| Сборка | Vite |
-| Стили | Tailwind CSS |
-| State | Zustand |
-| Анимации | Framer Motion |
-
-## 🚀 Запуск
+### Game-core (TypeScript)
 
 ```bash
-# Установка зависимостей
 npm install
-
-# Разработка
-npm run dev:web
-
-# Production билд
-npm run build --workspace=@enclose/web
+npm run build
+npm run typecheck
+npm --workspace @enclose/game-core run test
 ```
 
-## 📁 Структура
+### AI training
 
-```
-apps/
-├── web/                    # Telegram Mini App (React)
-│   ├── src/
-│   │   ├── game/          # Экраны игры
-│   │   ├── components/    # UI компоненты
-│   │   ├── store/         # Zustand stores
-│   │   └── lib/           # Утилиты
-│   └── dist/              # Production билд
-└── api/                    # Backend (опционально)
-
-packages/
-└── game-core/             # Игровая логика (shared)
+```bash
+npm run train:ai
 ```
 
-## 📱 Деплой в Telegram
+This updates:
+- `/Users/sarap005931/Desktop/Enclose/packages/game-core/src/data/weights.json`
 
-1. Собрать production билд
-2. Задеплоить на Railway/Vercel/Netlify
-3. Создать бота через @BotFather (`/newbot`)
-4. Подключить Mini App (`/newapp`)
-5. Готово! 🎉
+## License
 
-## 📄 Лицензия
-
-MIT License — см. [LICENSE](LICENSE)
-
----
-
-Made with ❤️ for Telegram
+MIT — see `/Users/sarap005931/Desktop/Enclose/LICENSE`.

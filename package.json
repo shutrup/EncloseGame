@@ -1,22 +1,15 @@
 {
-  "name": "enclose-telegram-monorepo",
+  "name": "enclose-ios-monorepo",
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev:web",
-    "dev:web": "npm --workspace @enclose/web run dev",
-    "dev:api": "npm --workspace @enclose/api run start:dev",
-    "build": "npm run build:core && npm run build:web && npm run build:api",
+    "dev": "echo 'Use Xcode: open Enclose.xcodeproj and run Enclose target'",
+    "build": "npm run build:core",
     "build:core": "npm --workspace @enclose/game-core run build",
-    "build:web": "npm --workspace @enclose/web run build",
-    "build:api": "npm --workspace @enclose/api run build",
-    "typecheck": "npm run typecheck:web && npm run typecheck:api && npm run typecheck:core",
-    "typecheck:web": "npm --workspace @enclose/web run typecheck",
-    "typecheck:api": "npm --workspace @enclose/api run typecheck",
+    "typecheck": "npm run typecheck:core",
     "typecheck:core": "npm --workspace @enclose/game-core run typecheck",
     "train:ai": "cd ai-trainer && python3 train.py && cp weights.json ../packages/game-core/src/data/weights.json && echo 'Successfully trained and updated game weights!'"
   }

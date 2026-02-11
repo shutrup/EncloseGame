@@ -4,9 +4,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Project Overview
 
-Enclose is a "Dots and Boxes" style strategy game implemented as a multi-platform monorepo:
-- **Telegram Mini App** — React web app (`apps/web`)
-- **NestJS API** — Backend with PostgreSQL/Prisma (`apps/api`)
+Enclose is a "Dots and Boxes" style strategy game focused on iOS:
 - **Native iOS app** — SwiftUI (`Enclose/`)
 - **Shared game logic** — TypeScript package (`packages/game-core`)
 - **AI trainer** — Python Q-learning trainer (`ai-trainer/`)
@@ -17,16 +15,10 @@ Enclose is a "Dots and Boxes" style strategy game implemented as a multi-platfor
 # Install dependencies (from root)
 npm install
 
-# Web app development
-npm run dev:web
-
-# API development (requires DATABASE_URL in .env)
-npm run dev:api
-
-# Build all packages
+# Build shared game-core package
 npm run build
 
-# Typecheck all packages
+# Typecheck shared game-core package
 npm run typecheck
 
 # Run game-core tests
@@ -39,21 +31,15 @@ npm run train:ai
 ### iOS App
 Open `Enclose.xcodeproj` in Xcode. Build target is `Enclose`.
 
-### API Database
-```bash
-npm --workspace @enclose/api run prisma:generate  # Generate client
-npm --workspace @enclose/api run prisma:migrate   # Run migrations
-```
-
 ## Architecture
 
 ### Package Structure
-- `packages/game-core/` — **Shared game logic** used by both web and API
-  - `types.ts` — Core types: `Player`, `Zone`, `BoardLayout`, `GameState`, `GameSession`
-  - `board.ts` — Board generation from presets (mini/standard/large)
-  - `engine.ts` — Game engine: `createGameSession()`, `playEdge()`, `winner()`
+- `packages/game-core/` — shared game logic
+  - `types.ts` — core types: `Player`, `Zone`, `BoardLayout`, `GameState`, `GameSession`
+  - `board.ts` — board generation from presets (mini/standard/large)
+  - `engine.ts` — game engine: `createGameSession()`, `playEdge()`, `winner()`
   - `ai.ts` — AI move selection with 3 difficulty levels
-  - `state.ts` — State management utilities
+  - `state.ts` — state management utilities
 
 ### Game Logic Flow
 1. Create session via `createGameSession({ preset, aiLevel })`
@@ -63,20 +49,11 @@ npm --workspace @enclose/api run prisma:migrate   # Run migrations
 
 ### AI Difficulty Levels
 - **Easy**: 22% random moves, otherwise greedy captures + safe moves
-- **Medium**: Heuristic scoring (captures, safety, board position)
-- **Hard**: Minimax with alpha-beta pruning and transposition tables
-
-### Web App State
-`apps/web/src/store/gameStore.ts` uses Zustand with screens: `home` → `setup` → `game` → `settings`
-
-### API Modules
-- `ai/` — AI move computation endpoint
-- `telegram/` — Telegram webhook handling
-- `prisma/` — Database service
-- `health/` — Health check endpoint
+- **Medium**: heuristic scoring (captures, safety, board position)
+- **Hard**: minimax with alpha-beta pruning and transposition tables
 
 ### iOS App Structure
-- `Enclose/Game/` — Game logic (mirrors game-core)
+- `Enclose/Game/` — game logic
 - `Enclose/UI/` — SwiftUI views
 - Settings stored in UserDefaults
 
