@@ -412,8 +412,17 @@ private struct GameOverModal: View {
         }
         .onAppear {
             animateIn = true
-            SoundManager.shared.play(.win)
+            playResultSoundIfNeeded()
         }
+    }
+
+    private func playResultSoundIfNeeded() {
+        guard let winner = winnerPlayer else { return }
+        guard engine.aiLevel != nil else {
+            SoundManager.shared.play(.win)
+            return
+        }
+        SoundManager.shared.play(winner == .x ? .win : .loss)
     }
     
     private var winnerTitleKey: String {

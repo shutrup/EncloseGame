@@ -78,12 +78,16 @@ struct HomeView: View {
                     Spacer()
                     
                     // Footer
-                    Text("v1.0")
+                    Text("v\(appVersion)")
                         .font(.caption)
                         .foregroundStyle(AppTheme.textSecondary)
                 }
             }
         }
         .tint(AppTheme.accent)
+    }
+
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
 }

@@ -27,10 +27,10 @@ struct ParticleView: View {
                     )
                 }
             }
-            .onChange(of: timeline.date) { _ in
+            .onChange(of: timeline.date) { _, _ in
                 updateParticles()
             }
-            .onChange(of: trigger) { point in
+            .onChange(of: trigger) { _, point in
                 if let point = point {
                     spawnParticles(at: point)
                 }
